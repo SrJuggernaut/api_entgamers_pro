@@ -1,0 +1,41 @@
+{
+  "name": "api_entgamers_pro",
+  "version": "1.0.0",
+  "description": "EntGamers Api",
+  "main": "index.js",
+  "scripts": {
+    "develop": "nodemon ./src/index.ts",
+    "start": "node ./dist/index.js",
+    "build": "tsc",
+    "lint": "eslint src/**/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SrJuggernaut/api_entgamers_pro.git"
+  },
+  "keywords": [
+    "EntGamers",
+    "Api"
+  ],
+  "author": "Juan Sanchez (SrJuggernaut)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SrJuggernaut/api_entgamers_pro/issues"
+  },
+  "homepage": "https://github.com/SrJuggernaut/api_entgamers_pro#readme",
+  "devDependencies": {
+    "@commitlint/cli": "^16.0.0",
+    "@commitlint/config-conventional": "^16.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.8.0",
+    "@typescript-eslint/parser": "^5.8.0",
+    "eslint": "^7.32.0",
+    "eslint-config-standard": "^16.0.3",
+    "eslint-plugin-import": "^2.25.3",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-promise": "^5.2.0",
+    "husky": "^7.0.4",
+    "nodemon": "^2.0.15",
+    "ts-node": "^10.4.0",
+    "typescript": "^4.5.4"
+  }
+}
