@@ -7,7 +7,10 @@
     "develop": "nodemon -r tsconfig-paths/register ./src/index.ts",
     "start": "TS_NODE_BASEURL=./dist node -r tsconfig-paths/register ./dist/index.js",
     "build": "tsc",
-    "lint": "eslint src/**/*.ts"
+    "lint": "eslint src/**/*.ts",
+    "prisma": "prisma",
+    "prisma:db": "prisma db",
+    "prisma:generate": "prisma generate"
   },
   "repository": {
     "type": "git",
@@ -36,11 +39,13 @@
     "eslint-plugin-promise": "^6.0.0",
     "husky": "^7.0.4",
     "nodemon": "^2.0.15",
+    "prisma": "^3.7.0",
     "ts-node": "^10.4.0",
     "tsconfig-paths": "^3.12.0",
     "typescript": "^4.5.4"
   },
   "dependencies": {
+    "@prisma/client": "^3.7.0",
     "dotenv": "^10.0.0",
     "express": "^4.17.2"
   }
