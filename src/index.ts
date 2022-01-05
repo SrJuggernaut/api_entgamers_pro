@@ -3,9 +3,10 @@ import passport from 'passport'
 
 import authRoutes from '@routes/authRoutes'
 import { PORT } from '@services/config/config'
-import { connect } from '@lib/prisma'
+import { connect } from '@lib/prisma/prisma'
 import localStrategy from '@lib/passport/localStrategy'
 import discordStrategy from '@lib/passport/discordStrategy'
+import errorHandler from '@services/error/errorHandler'
 
 const app = express()
 
@@ -17,6 +18,8 @@ passport.use(localStrategy)
 passport.use(discordStrategy)
 
 app.use('/auth', authRoutes)
+
+app.use(errorHandler)
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)

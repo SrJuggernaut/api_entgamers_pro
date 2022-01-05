@@ -1,4 +1,4 @@
-import { PrismaClient } from '@prisma/client'
+import { Prisma, PrismaClient } from '@prisma/client'
 
 const prisma = new PrismaClient()
 
@@ -7,7 +7,10 @@ export const connect = async () => {
     await prisma.$connect()
     console.log('Connected to Database')
   } catch (error) {
-    console.error(error)
+    if (error instanceof Prisma.PrismaClientInitializationError) {
+      console.error('Could not connect to Database:', error.message)
+      process.exit(1)
+    }
   }
 }
 
