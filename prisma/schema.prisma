@@ -14,20 +14,21 @@ model Auth {
   id                 String     @id @default(cuid())
   password           String
   resetPasswordToken String?
-  provider           Provider[]
+  providers          Provider[]
   profile            Profile    @relation(fields: [profileId], references: [id])
-  profileId          String
+  profileId          String     @unique
 
   @@map("auths")
 }
 
 model Provider {
-  id     Int    @id @default(autoincrement())
-  name   String
-  apiId  String
-  auth   Auth   @relation(fields: [authId], references: [id])
-  authId String
+  id         Int    @id @default(autoincrement())
+  name       String
+  identifier String
+  auth       Auth   @relation(fields: [authId], references: [id])
+  authId     String
 
+  @@unique([name, identifier])
   @@map("providers")
 }
 
@@ -35,24 +36,14 @@ model Profile {
   id          String    @id @default(cuid())
   name        String
   email       String
+  biography   String?
   gender      String?
   dateOfBirth DateTime?
   createdAt   DateTime  @default(now())
   modifiedAt  DateTime  @updatedAt
   confirmed   Boolean   @default(false)
   blocked     Boolean   @default(false)
-  auth        Auth[]
-  role        Role      @relation(fields: [roleId], references: [id])
-  roleId      String
+  auth        Auth?
 
   @@map("profiles")
-}
-
-model Role {
-  id          String    @id @default(cuid())
-  name        String
-  permissions String[]
-  Profiles    Profile[]
-
-  @@map("roles")
 }
