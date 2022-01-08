@@ -1,7 +1,7 @@
 import DiscordStrategy from 'passport-discord'
 
 import { getAuthByIdentifier } from '@services/auth/authStore'
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@services/config/config'
+import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
 
 const discordStrategy = new DiscordStrategy.Strategy({
   clientID: DISCORD_CLIENT_ID,

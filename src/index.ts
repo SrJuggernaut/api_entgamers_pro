@@ -2,7 +2,7 @@ import express from 'express'
 import passport from 'passport'
 
 import authRoutes from '@routes/authRoutes'
-import { PORT } from '@services/config/config'
+import { PORT } from '@lib/dotenv/dotenv'
 import { connect } from '@lib/prisma/prisma'
 import localStrategy from '@lib/passport/localStrategy'
 import discordStrategy from '@lib/passport/discordStrategy'
