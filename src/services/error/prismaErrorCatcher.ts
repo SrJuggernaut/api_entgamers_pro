@@ -12,14 +12,14 @@ const prismaErrorCatcher = (error: unknown) => {
       case 'P2012':
       case 'P2013':
       case 'P2019':
-        throw new ApiError(400, 'Bad Request', 'Validation Error')
+        return new ApiError(400, 'Bad Request', 'Validation Error')
       case 'P2001':
-        throw new ApiError(404, 'Not Found')
+        return new ApiError(404, 'Not Found')
       case 'P2002':
       case 'P2003':
       case 'P2004':
       case 'P2014':
-        throw new ApiError(409, 'Conflict', error.message)
+        return new ApiError(409, 'Conflict', error.message)
       case 'P2005':
       case 'P2006':
       case 'P2008':
@@ -37,19 +37,19 @@ const prismaErrorCatcher = (error: unknown) => {
       case 'P2026':
       case 'P2027':
         console.log('unexpected prisma error:', error)
-        throw new ApiError()
+        return new ApiError()
       default:
         break
     }
   } else if (error instanceof Prisma.PrismaClientUnknownRequestError) {
     console.log('unexpected prisma error:', error)
-    throw new ApiError()
+    return new ApiError()
   } else if (error instanceof Prisma.PrismaClientRustPanicError) {
     console.log('unexpected prisma error:', error)
     process.exit(1)
   } else if (error instanceof Prisma.PrismaClientValidationError) {
     console.log('unexpected prisma error:', error)
-    throw new ApiError(400, 'Validation Error')
+    return new ApiError(400, 'Validation Error')
   }
 }
 

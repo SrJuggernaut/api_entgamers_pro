@@ -1,12 +1,13 @@
 import bcrypt from 'bcrypt'
-import { Prisma } from '@prisma/client'
+import { Prisma, Auth } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import fetch from 'isomorphic-fetch'
 import passport from 'passport'
 
 import { validateLogin, validateRegister, validateAuthDiscord } from '@services/validation/authValidation'
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@services/config/config'
 import { createAuth } from '@services/auth/authStore'
+import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
+import { createAuthToken } from '@lib/jwt/jwt'
 
 interface DiscordOauthTokenResponse {
   access_token: string,
@@ -51,10 +52,9 @@ authRoutes.post('/register',
       res.status(200).json({
         message: 'Registering user',
         data: createdAuth?.profile
-      })
-      next()
+      }).send()
     } catch (error) {
-
+      next(error)
     }
   }
 )
@@ -76,14 +76,12 @@ authRoutes.post('/register/discord',
         body: paramsToToken
       })
       const jsonToken = (await resToken.json()) as DiscordOauthTokenResponse
-      console.log('jsontoken', jsonToken)
       const resUser = await fetch('https://discord.com/api/users/@me', {
         headers: {
           Authorization: `Bearer ${jsonToken.access_token}`
         }
       })
       const jsonUser = (await resUser.json()) as DiscordUserResponse
-      console.log('jsonUser', jsonUser)
       const authToCreate: Prisma.AuthCreateArgs = {
         data: {
           password: randomPassword,
@@ -105,9 +103,9 @@ authRoutes.post('/register/discord',
       res.status(200).json({
         message: 'Registering user',
         data: createdAuth?.profile
-      })
+      }).send()
     } catch (error) {
-      console.log(error)
+      next(error)
     }
   }
 )
@@ -116,11 +114,18 @@ authRoutes.post('/login',
   validateLogin,
   passport.authenticate('local', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
-    res.status(200).json({
-      message: 'Logging in user',
-      data: req.user
-    })
-    next()
+    try {
+      const token = createAuthToken(req.user as Auth)
+      res.status(200).json({
+        message: 'Logging in user',
+        data: {
+          token: token,
+          user: req.user
+        }
+      }).send()
+    } catch (error) {
+      next(error)
+    }
   }
 )
 
@@ -128,11 +133,18 @@ authRoutes.post('/login/discord',
   validateAuthDiscord,
   passport.authenticate('discord', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
-    res.status(200).json({
-      message: 'Logging in user',
-      data: req.user
-    })
-    next()
+    try {
+      const token = createAuthToken(req.user as Auth)
+      res.status(200).json({
+        message: 'Logging in user',
+        data: {
+          token: token,
+          user: req.user
+        }
+      }).send()
+    } catch (error) {
+      next(error)
+    }
   }
 )
 

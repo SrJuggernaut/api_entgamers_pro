@@ -8,7 +8,7 @@ export const createAuth = async (authCreateArgs: Prisma.AuthCreateArgs) => {
     const auth = await prisma.auth.create({ ...authCreateArgs, include: { profile: true } })
     return auth
   } catch (error) {
-    prismaErrorCatcher(error)
+    throw prismaErrorCatcher(error)
   }
 }
 
@@ -17,6 +17,6 @@ export const getAuthByIdentifier = async (authFindFirstArgs: Prisma.AuthFindFirs
     const auth = await prisma.auth.findFirst({ ...authFindFirstArgs, include: { profile: true } })
     return auth
   } catch (error) {
-    prismaErrorCatcher(error)
+    throw prismaErrorCatcher(error)
   }
 }
