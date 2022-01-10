@@ -5,8 +5,8 @@ import fetch from 'isomorphic-fetch'
 import passport from 'passport'
 import { addSeconds } from 'date-fns'
 
-import { validateLogin, validateRegister, validateAuthDiscord } from '@services/validation/authValidation'
-import { createAuth } from '@services/auth/authStore'
+import { validateLogin, validateRegister, validateAuthDiscord, validateAuthLocal } from '@services/validation/authValidation'
+import { createAuth, updateAuth } from '@services/auth/authStore'
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
 import { createAuthToken } from '@lib/jwt/jwt'
 
@@ -62,7 +62,7 @@ authRoutes.post('/register',
     try {
       const createdAuth = await createAuth(authToCreate)
       res.status(200).json({
-        message: 'Registering user',
+        message: 'Successfully registered',
         data: createdAuth?.profile
       }).send()
     } catch (error) {
@@ -117,7 +117,7 @@ authRoutes.post('/register/discord',
       }
       const createdAuth = await createAuth(authToCreate)
       res.status(200).json({
-        message: 'Registering user',
+        message: 'Successfully registered',
         data: createdAuth?.profile
       }).send()
     } catch (error) {
@@ -133,7 +133,7 @@ authRoutes.post('/login',
     try {
       const token = createAuthToken(req.user as Auth)
       res.status(200).json({
-        message: 'Logging in user',
+        message: 'Successfully logged in',
         data: {
           token: token,
           user: req.user
@@ -152,7 +152,7 @@ authRoutes.post('/login/discord',
     try {
       const token = createAuthToken(req.user as Auth)
       res.status(200).json({
-        message: 'Logging in user',
+        message: 'Successfully logged in',
         data: {
           token: token,
           user: req.user
@@ -161,6 +161,83 @@ authRoutes.post('/login/discord',
     } catch (error) {
       next(error)
     }
+  }
+)
+
+authRoutes.post('/connect/discord',
+  validateAuthDiscord,
+  passport.authenticate('jwt', { session: false }),
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { id } = req.user as Auth
+    const paramsToToken = new URLSearchParams({
+      client_id: DISCORD_CLIENT_ID,
+      client_secret: DISCORD_CLIENT_SECRET,
+      grant_type: 'authorization_code',
+      code: req.body.code,
+      redirect_uri: DISCORD_REDIRECT_URI
+    })
+    try {
+      const resToken = await fetch('https://discord.com/api/oauth2/token', {
+        method: 'POST',
+        body: paramsToToken
+      })
+      const jsonToken = (await resToken.json()) as DiscordOauthTokenResponse
+      const resUser = await fetch('https://discord.com/api/users/@me', {
+        headers: {
+          Authorization: `Bearer ${jsonToken.access_token}`
+        }
+      })
+      const jsonUser = (await resUser.json()) as DiscordUserResponse
+      const authToCreate: Prisma.AuthUpdateArgs = {
+        where: {
+          profileId: id
+        },
+        data: {
+          providers: {
+            create: {
+              name: 'discord',
+              apiIdentifier: jsonUser.id,
+              apiToken: jsonToken.access_token,
+              apiRefreshToken: jsonToken.refresh_token,
+              expiresAt: addSeconds(new Date(), jsonToken.expires_in)
+            }
+          }
+        }
+      }
+      const updatedAuth = await updateAuth(authToCreate)
+      res.status(200).json({
+        message: 'Successfully connected',
+        data: updatedAuth?.profile
+      }).send()
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/connect/local',
+  validateAuthLocal,
+  passport.authenticate('jwt', { session: false }),
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { id } = req.user as Auth
+    const authToCreate: Prisma.AuthUpdateArgs = {
+      where: {
+        profileId: id
+      },
+      data: {
+        providers: {
+          create: {
+            name: 'local',
+            apiIdentifier: req.body.email
+          }
+        }
+      }
+    }
+    const updatedAuth = await updateAuth(authToCreate)
+    res.status(200).json({
+      message: 'Successfully connected',
+      data: updatedAuth?.profile
+    }).send()
   }
 )
 

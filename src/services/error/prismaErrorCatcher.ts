@@ -15,12 +15,19 @@ const prismaErrorCatcher = (error: unknown) => {
         return new ApiError(400, 'Bad Request', 'Validation Error')
       case 'P2001':
         return new ApiError(404, 'Not Found')
-      case 'P2002':
+      case 'P2002': {
+        interface Error2002 extends Prisma.PrismaClientKnownRequestError{
+          meta:{
+            target: Array<string>
+          }
+        }
+        const error2002:Error2002 = error as Error2002
+        return new ApiError(409, 'Conflict', `Unique constraint failed on: "${error2002.meta!.target[0]}"`)
+      }
       case 'P2003':
       case 'P2004':
       case 'P2014':
-        return new ApiError(409, 'Conflict', error.message)
-      case 'P2005':
+        return new ApiError(409, 'Conflict')
       case 'P2006':
       case 'P2008':
       case 'P2010':

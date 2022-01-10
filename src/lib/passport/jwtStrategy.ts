@@ -1,14 +1,14 @@
 import passportJwt from 'passport-jwt'
 
 import { JWT_SECRET } from '@lib/dotenv/dotenv'
-import { getAuthByIdentifier } from '@services/auth/authStore'
+import { getAuthByProfile } from '@services/auth/authStore'
 
 const JwtStrategy = new passportJwt.Strategy({
   jwtFromRequest: passportJwt.ExtractJwt.fromAuthHeaderAsBearerToken(),
   secretOrKey: JWT_SECRET
 }, async (jwtPayload, done) => {
   try {
-    const auth = await getAuthByIdentifier({
+    const auth = await getAuthByProfile({
       where: {
         id: jwtPayload.sub
       }

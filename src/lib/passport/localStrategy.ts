@@ -1,17 +1,15 @@
 import bcrypt from 'bcrypt'
 import LocalStrategy from 'passport-local'
 
-import { getAuthByIdentifier } from '@services/auth/authStore'
+import { getAuthByProvider } from '@services/auth/authStore'
 
 const localStrategy = new LocalStrategy.Strategy({ usernameField: 'email', session: false }, async (email, password, done) => {
   try {
-    const auth = await getAuthByIdentifier({
+    const auth = await getAuthByProvider({
       where: {
-        providers: {
-          every: {
-            name: 'local',
-            apiIdentifier: email
-          }
+        name_apiIdentifier: {
+          name: 'local',
+          apiIdentifier: email
         }
       }
     })

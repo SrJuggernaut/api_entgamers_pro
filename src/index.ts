@@ -22,8 +22,6 @@ passport.use(jwtStrategy)
 
 app.use('/auth', authRoutes)
 
-app.use(passport.authorize('jwt', { session: false }))
-
 app.use(errorHandler)
 
 app.listen(PORT, () => {

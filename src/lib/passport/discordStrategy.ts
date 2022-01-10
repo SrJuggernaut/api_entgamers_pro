@@ -1,6 +1,6 @@
 import DiscordStrategy from 'passport-discord'
 
-import { getAuthByIdentifier } from '@services/auth/authStore'
+import { getAuthByProvider } from '@services/auth/authStore'
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
 
 const discordStrategy = new DiscordStrategy.Strategy({
@@ -10,13 +10,11 @@ const discordStrategy = new DiscordStrategy.Strategy({
   scope: ['identify', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
   try {
-    const auth = await getAuthByIdentifier({
+    const auth = await getAuthByProvider({
       where: {
-        providers: {
-          every: {
-            name: 'discord',
-            apiIdentifier: profile.id
-          }
+        name_apiIdentifier: {
+          name: 'discord',
+          apiIdentifier: profile.id
         }
       }
     })
