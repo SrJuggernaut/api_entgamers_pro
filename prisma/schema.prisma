@@ -11,7 +11,7 @@ datasource db {
 }
 
 model Auth {
-  id                 String     @id @default(cuid())
+  id                 String     @id @default(uuid())
   password           String
   resetPasswordToken String?
   providers          Provider[]
@@ -33,9 +33,10 @@ model Provider {
 }
 
 model Profile {
-  id          String    @id @default(cuid())
-  name        String
+  id          String    @id @default(uuid())
+  userName    String
   email       String
+  name        String?
   biography   String?
   gender      String?
   dateOfBirth DateTime?

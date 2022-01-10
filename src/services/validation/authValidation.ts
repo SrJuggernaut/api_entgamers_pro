@@ -5,7 +5,7 @@ import Joi from 'joi'
 const registerSchema = Joi.object({
   email: Joi.string().email().required(),
   password: Joi.string().min(6).required(),
-  name: Joi.string().required()
+  userName: Joi.string().required()
 })
 
 export const validateRegister = (req: Request, res: Response, next: NextFunction) => {

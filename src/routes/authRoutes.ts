@@ -36,7 +36,7 @@ authRoutes.post('/register',
         profile: {
           create: {
             email: req.body.email,
-            name: req.body.name
+            userName: req.body.userName
           }
         },
         providers: {
@@ -88,7 +88,7 @@ authRoutes.post('/register/discord',
           profile: {
             create: {
               email: jsonUser.id,
-              name: jsonUser.username
+              userName: jsonUser.username
             }
           },
           providers: {
