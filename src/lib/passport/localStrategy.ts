@@ -9,8 +9,8 @@ const localStrategy = new LocalStrategy.Strategy({ usernameField: 'email', sessi
       where: {
         providers: {
           every: {
-            identifier: email,
-            name: 'local'
+            name: 'local',
+            apiIdentifier: email
           }
         }
       }

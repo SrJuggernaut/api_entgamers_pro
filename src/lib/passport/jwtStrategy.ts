@@ -14,7 +14,7 @@ const JwtStrategy = new passportJwt.Strategy({
       }
     })
     if (!auth) {
-      return done(null, false, { message: 'Incorrect email or password' })
+      return done(null, false, { message: 'invalid token' })
     }
     return done(null, auth.profile)
   } catch (error) {

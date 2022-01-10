@@ -12,6 +12,7 @@ datasource db {
 
 model Auth {
   id                 String     @id @default(uuid())
+  email              String     @unique
   password           String
   resetPasswordToken String?
   providers          Provider[]
@@ -22,20 +23,23 @@ model Auth {
 }
 
 model Provider {
-  id         Int    @id @default(autoincrement())
-  name       String
-  identifier String
-  auth       Auth   @relation(fields: [authId], references: [id])
-  authId     String
+  id              Int       @id @default(autoincrement())
+  name            String
+  apiIdentifier   String
+  apiToken        String?
+  apiRefreshToken String?
+  expiresAt       DateTime?
+  auth            Auth      @relation(fields: [authId], references: [id])
+  authId          String
 
-  @@unique([name, identifier])
+  @@unique([name, apiIdentifier])
   @@map("providers")
 }
 
 model Profile {
   id          String    @id @default(uuid())
-  userName    String
-  email       String
+  userName    String    @unique
+  email       String    @unique
   name        String?
   biography   String?
   gender      String?

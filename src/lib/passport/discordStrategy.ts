@@ -9,14 +9,13 @@ const discordStrategy = new DiscordStrategy.Strategy({
   callbackURL: DISCORD_REDIRECT_URI,
   scope: ['identify', 'email']
 }, async (accessToken, refreshToken, profile, done) => {
-  console.log('profile', profile)
   try {
     const auth = await getAuthByIdentifier({
       where: {
         providers: {
           every: {
-            identifier: profile.id,
-            name: 'discord'
+            name: 'discord',
+            apiIdentifier: profile.id
           }
         }
       }

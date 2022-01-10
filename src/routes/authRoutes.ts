@@ -3,6 +3,7 @@ import { Prisma, Auth } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import fetch from 'isomorphic-fetch'
 import passport from 'passport'
+import { addSeconds } from 'date-fns'
 
 import { validateLogin, validateRegister, validateAuthDiscord } from '@services/validation/authValidation'
 import { createAuth } from '@services/auth/authStore'
@@ -18,10 +19,19 @@ interface DiscordOauthTokenResponse {
 }
 
 interface DiscordUserResponse {
+  id: string,
   username: string,
-  discriminator: string,
-  avatar: string,
-  id: string
+  avatar: string
+  discriminator: string
+  public_flags: number
+  flags: number
+  banner?: string
+  banner_color?: string
+  accent_color?: string
+  locale?: string
+  mfa_enabled: boolean
+  email: string
+  verified: boolean
 }
 
 const authRoutes = Router()
@@ -29,20 +39,22 @@ const authRoutes = Router()
 authRoutes.post('/register',
   validateRegister,
   async (req: Request, res:Response, next:NextFunction) => {
-    const password = await bcrypt.hash(req.body.password, 10)
+    const { email, password, userName } = req.body
+    const encryptedPassword = await bcrypt.hash(password, 10)
     const authToCreate: Prisma.AuthCreateArgs = {
       data: {
-        password: password,
+        email: email,
+        password: encryptedPassword,
         profile: {
           create: {
-            email: req.body.email,
-            userName: req.body.userName
+            email: email,
+            userName: userName
           }
         },
         providers: {
           create: {
             name: 'local',
-            identifier: req.body.email
+            apiIdentifier: email
           }
         }
       }
@@ -84,6 +96,7 @@ authRoutes.post('/register/discord',
       const jsonUser = (await resUser.json()) as DiscordUserResponse
       const authToCreate: Prisma.AuthCreateArgs = {
         data: {
+          email: jsonUser.email,
           password: randomPassword,
           profile: {
             create: {
@@ -94,7 +107,10 @@ authRoutes.post('/register/discord',
           providers: {
             create: {
               name: 'discord',
-              identifier: jsonUser.id
+              apiIdentifier: jsonUser.id,
+              apiToken: jsonToken.access_token,
+              apiRefreshToken: jsonToken.refresh_token,
+              expiresAt: addSeconds(new Date(), jsonToken.expires_in)
             }
           }
         }
