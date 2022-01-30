@@ -1,5 +1,6 @@
 import express from 'express'
 import passport from 'passport'
+import cors from 'cors'
 
 import authRoutes from '@routes/authRoutes'
 import { PORT } from '@lib/dotenv/dotenv'
@@ -15,6 +16,7 @@ connect()
 
 app.use(express.json())
 app.use(passport.initialize())
+app.use(cors())
 
 passport.use(localStrategy)
 passport.use(discordStrategy)
