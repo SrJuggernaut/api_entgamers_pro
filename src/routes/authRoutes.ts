@@ -64,7 +64,7 @@ authRoutes.post('/register',
       res.status(200).json({
         message: 'Successfully registered',
         data: createdAuth?.profile
-      }).send()
+      })
     } catch (error) {
       next(error)
     }
@@ -119,7 +119,7 @@ authRoutes.post('/register/discord',
       res.status(200).json({
         message: 'Successfully registered',
         data: createdAuth?.profile
-      }).send()
+      })
     } catch (error) {
       next(error)
     }
@@ -138,7 +138,7 @@ authRoutes.post('/login',
           token: token,
           user: req.user
         }
-      }).send()
+      })
     } catch (error) {
       next(error)
     }
@@ -157,7 +157,7 @@ authRoutes.post('/login/discord',
           token: token,
           user: req.user
         }
-      }).send()
+      })
     } catch (error) {
       next(error)
     }
@@ -208,7 +208,7 @@ authRoutes.post('/connect/discord',
       res.status(200).json({
         message: 'Successfully connected',
         data: updatedAuth?.profile
-      }).send()
+      })
     } catch (error) {
       next(error)
     }
@@ -237,7 +237,7 @@ authRoutes.post('/connect/local',
     res.status(200).json({
       message: 'Successfully connected',
       data: updatedAuth?.profile
-    }).send()
+    })
   }
 )
 
