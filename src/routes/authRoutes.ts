@@ -1,5 +1,5 @@
 import bcrypt from 'bcrypt'
-import { Prisma, Auth } from '@prisma/client'
+import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import fetch from 'isomorphic-fetch'
 import passport from 'passport'
@@ -131,7 +131,7 @@ authRoutes.post('/login',
   passport.authenticate('local', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
     try {
-      const token = createAuthToken(req.user as Auth)
+      const token = createAuthToken(req.user)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
@@ -150,7 +150,7 @@ authRoutes.post('/login/discord',
   passport.authenticate('discord', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
     try {
-      const token = createAuthToken(req.user as Auth)
+      const token = createAuthToken(req.user)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
@@ -168,7 +168,7 @@ authRoutes.post('/connect/discord',
   validateAuthDiscord,
   passport.authenticate('jwt', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
-    const { id } = req.user as Auth
+    const { id } = req.user
     const paramsToToken = new URLSearchParams({
       client_id: DISCORD_CLIENT_ID,
       client_secret: DISCORD_CLIENT_SECRET,
@@ -218,8 +218,8 @@ authRoutes.post('/connect/discord',
 authRoutes.post('/connect/local',
   validateAuthLocal,
   passport.authenticate('jwt', { session: false }),
-  async (req: Request, res:Response, next:NextFunction) => {
-    const { id } = req.user as Auth
+  async (req: Request, res:Response, _next:NextFunction) => {
+    const { id } = req.user
     const authToCreate: Prisma.AuthUpdateArgs = {
       where: {
         profileId: id
