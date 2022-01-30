@@ -53,3 +53,15 @@ export const validateAuthLocal = (req: Request, res: Response, next: NextFunctio
   }
   next()
 }
+
+const verifySchema = Joi.object({
+  token: Joi.string().required()
+})
+
+export const validateVerify = (req: Request, res: Response, next: NextFunction) => {
+  const { error } = verifySchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  next()
+}

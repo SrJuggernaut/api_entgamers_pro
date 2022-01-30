@@ -5,10 +5,11 @@ import fetch from 'isomorphic-fetch'
 import passport from 'passport'
 import { addSeconds } from 'date-fns'
 
-import { validateLogin, validateRegister, validateAuthDiscord, validateAuthLocal } from '@services/validation/authValidation'
+import { validateLogin, validateRegister, validateAuthDiscord, validateAuthLocal, validateVerify } from '@services/validation/authValidation'
 import { createAuth, updateAuth } from '@services/auth/authStore'
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
-import { createAuthToken } from '@lib/jwt/jwt'
+import { createAuthToken, createVerifyToken, verifyVerifyToken } from '@lib/jwt/jwt'
+import verifyAuthMail from '@services/mail/verifyAuthMail'
 
 interface DiscordOauthTokenResponse {
   access_token: string,
@@ -61,9 +62,10 @@ authRoutes.post('/register',
     }
     try {
       const createdAuth = await createAuth(authToCreate)
+      const token = createVerifyToken(createdAuth)
+      await verifyAuthMail({ email, userName }, token)
       res.status(200).json({
-        message: 'Successfully registered',
-        data: createdAuth?.profile
+        message: 'Successfully registered, please check your email to verify your account.'
       })
     } catch (error) {
       next(error)
@@ -116,9 +118,10 @@ authRoutes.post('/register/discord',
         }
       }
       const createdAuth = await createAuth(authToCreate)
+      const token = createVerifyToken(createdAuth)
+      await verifyAuthMail({ email: jsonUser.email, userName: jsonUser.username }, token)
       res.status(200).json({
-        message: 'Successfully registered',
-        data: createdAuth?.profile
+        message: 'Successfully registered, please check your email to verify your account.'
       })
     } catch (error) {
       next(error)
@@ -130,6 +133,11 @@ authRoutes.post('/login',
   validateLogin,
   passport.authenticate('local', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
+    if (!req.user.confirmed) {
+      return res.status(401).json({
+        message: 'Please verify your account first.'
+      })
+    }
     try {
       const token = createAuthToken(req.user)
       res.status(200).json({
@@ -149,6 +157,11 @@ authRoutes.post('/login/discord',
   validateAuthDiscord,
   passport.authenticate('discord', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
+    if (!req.user.confirmed) {
+      return res.status(401).json({
+        message: 'Please verify your account first.'
+      })
+    }
     try {
       const token = createAuthToken(req.user)
       res.status(200).json({
@@ -204,10 +217,9 @@ authRoutes.post('/connect/discord',
           }
         }
       }
-      const updatedAuth = await updateAuth(authToCreate)
+      await updateAuth(authToCreate)
       res.status(200).json({
-        message: 'Successfully connected',
-        data: updatedAuth?.profile
+        message: 'Successfully connected'
       })
     } catch (error) {
       next(error)
@@ -233,11 +245,38 @@ authRoutes.post('/connect/local',
         }
       }
     }
-    const updatedAuth = await updateAuth(authToCreate)
+    await updateAuth(authToCreate)
     res.status(200).json({
-      message: 'Successfully connected',
-      data: updatedAuth?.profile
+      message: 'Successfully connected'
     })
+  }
+)
+
+authRoutes.post('/verify',
+  validateVerify,
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { token } = req.body
+    try {
+      const jwtPayload = verifyVerifyToken(token) as { sub: string }
+      const updatedAuth = await updateAuth({
+        where: {
+          id: jwtPayload.sub
+        },
+        data: {
+          confirmed: true
+        }
+      })
+      const authToken = createAuthToken(updatedAuth)
+      res.status(200).json({
+        message: 'Successfully verified',
+        data: {
+          token: authToken,
+          user: updatedAuth?.profile
+        }
+      })
+    } catch (error) {
+      next(error)
+    }
   }
 )
 
