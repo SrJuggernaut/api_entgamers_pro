@@ -4,12 +4,14 @@ import { NextFunction, Request, Response, Router } from 'express'
 import fetch from 'isomorphic-fetch'
 import passport from 'passport'
 import { addSeconds } from 'date-fns'
+import { JsonWebTokenError } from 'jsonwebtoken'
 
 import { validateLogin, validateRegister, validateAuthDiscord, validateAuthLocal, validateVerify } from '@services/validation/authValidation'
 import { createAuth, updateAuth } from '@services/auth/authStore'
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
 import { createAuthToken, createVerifyToken, verifyVerifyToken } from '@lib/jwt/jwt'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
+import ApiError from '@services/error/ApiError'
 
 interface DiscordOauthTokenResponse {
   access_token: string,
@@ -275,6 +277,9 @@ authRoutes.post('/verify',
         }
       })
     } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        return next(new ApiError(400, 'Bad Request', 'Invalid token'))
+      }
       next(error)
     }
   }
