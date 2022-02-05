@@ -9,10 +9,11 @@ const registerSchema = Joi.object({
 })
 
 export const validateRegister = (req: Request, res: Response, next: NextFunction) => {
-  const { error } = registerSchema.validate(req.body, { abortEarly: false })
+  const { error, value } = registerSchema.validate(req.body, { abortEarly: false })
   if (error) {
-    next(new ApiError(400, 'Bad Request', error.details[0].message))
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
   }
+  req.body = value
   next()
 }
 
@@ -23,7 +24,7 @@ const authDiscordSchema = Joi.object({
 export const validateAuthDiscord = (req: Request, res: Response, next: NextFunction) => {
   const { error, value } = authDiscordSchema.validate(req.body, { abortEarly: false })
   if (error) {
-    next(new ApiError(400, 'Bad Request', error.details[0].message))
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
   }
   req.query.code = value.code
   next()
@@ -35,22 +36,11 @@ const loginSchema = Joi.object({
 })
 
 export const validateLogin = (req: Request, res: Response, next: NextFunction) => {
-  const { error } = loginSchema.validate(req.body, { abortEarly: false })
+  const { error, value } = loginSchema.validate(req.body, { abortEarly: false })
   if (error) {
-    next(new ApiError(400, 'Bad Request', error.details[0].message))
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
   }
-  next()
-}
-
-const validateAuthLocalSchema = Joi.object({
-  email: Joi.string().email().required()
-})
-
-export const validateAuthLocal = (req: Request, res: Response, next: NextFunction) => {
-  const { error } = validateAuthLocalSchema.validate(req.body, { abortEarly: false })
-  if (error) {
-    next(new ApiError(400, 'Bad Request', error.details[0].message))
-  }
+  req.body = value
   next()
 }
 
@@ -59,9 +49,63 @@ const verifySchema = Joi.object({
 })
 
 export const validateVerify = (req: Request, res: Response, next: NextFunction) => {
-  const { error } = verifySchema.validate(req.body, { abortEarly: false })
+  const { error, value } = verifySchema.validate(req.body, { abortEarly: false })
   if (error) {
-    next(new ApiError(400, 'Bad Request', error.details[0].message))
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
   }
+  req.body = value
+  next()
+}
+
+const sendEmailSchema = Joi.object({
+  email: Joi.string().email().required()
+})
+
+export const validateSendEmail = (req: Request, res: Response, next: NextFunction) => {
+  const { error, value } = sendEmailSchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  req.body = value
+  next()
+}
+
+const recoverPasswordSchema = Joi.object({
+  email: Joi.string().email().required(),
+  token: Joi.string().required()
+})
+
+export const validateRecoverPassword = (req: Request, res: Response, next: NextFunction) => {
+  const { error, value } = recoverPasswordSchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  req.body = value
+  next()
+}
+
+const changePasswordSchema = Joi.object({
+  password: Joi.string().min(6).required()
+})
+
+export const validateChangePassword = (req: Request, res: Response, next: NextFunction) => {
+  const { error, value } = changePasswordSchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  req.body = value
+  next()
+}
+
+const changeEmailSchema = Joi.object({
+  email: Joi.string().email().required()
+})
+
+export const validateChangeEmail = (req: Request, res: Response, next: NextFunction) => {
+  const { error, value } = changeEmailSchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  req.body = value
   next()
 }

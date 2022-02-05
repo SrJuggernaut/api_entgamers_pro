@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
-import { validateLogin, validateRegister, validateVerify } from '@services/validation/authValidation'
+import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateSendEmail, validateVerify } from '@services/validation/authValidation'
 import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
 import { createAuthToken, createRecoverPasswordToken, createVerifyToken, verifyToken } from '@lib/jwt/jwt'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
@@ -11,6 +11,7 @@ import ApiError from '@services/error/ApiError'
 import authenticateJwt, { authenticateNotRequiredJwt } from '@services/auth/authenticateJwt'
 import authenticateDiscord from '@services/auth/authenticateDiscord'
 import recoverPassword from '@services/mail/recoverPassword'
+import authenticateLocal from '@services/auth/authenticateLocal'
 
 const authRoutes = Router()
 
@@ -46,6 +47,7 @@ authRoutes.post('/register',
 
 authRoutes.post('/login',
   validateLogin,
+  authenticateLocal,
   async (req: Request, res:Response, next:NextFunction) => {
     if (!req.auth.confirmed) {
       return res.status(401).json({
@@ -72,9 +74,7 @@ authRoutes.post('/discord',
   authenticateDiscord,
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.auth.confirmed) {
-      return res.status(401).json({
-        message: 'Please verify your account first.'
-      })
+      return next(new ApiError(401, 'Unauthorized', 'Please verify your account first.'))
     }
     try {
       const token = createAuthToken(req.auth)
@@ -123,6 +123,7 @@ authRoutes.post('/verify',
 )
 
 authRoutes.post('/sendRecoverPassword',
+  validateSendEmail,
   async (req: Request, res:Response, next:NextFunction) => {
     const { email } = req.body
     try {
@@ -141,6 +142,7 @@ authRoutes.post('/sendRecoverPassword',
 )
 
 authRoutes.post('/recoverPassword',
+  validateRecoverPassword,
   async (req: Request, res:Response, next:NextFunction) => {
     const { token, password } = req.body
     try {
@@ -172,9 +174,10 @@ authRoutes.post('/recoverPassword',
 
 authRoutes.post('/changePassword',
   authenticateJwt,
+  validateChangePassword,
   async (req: Request, res:Response, next:NextFunction) => {
+    const { password } = req.body
     try {
-      const { password } = req.body
       const updatedAuth = await updateAuth({
         where: {
           id: req.auth.id
@@ -199,9 +202,10 @@ authRoutes.post('/changePassword',
 
 authRoutes.post('/changeEmail',
   authenticateJwt,
+  validateChangeEmail,
   async (req: Request, res:Response, next:NextFunction) => {
+    const { email } = req.body
     try {
-      const { email } = req.body
       const updatedAuth = await updateAuth({
         where: {
           id: req.auth.id
