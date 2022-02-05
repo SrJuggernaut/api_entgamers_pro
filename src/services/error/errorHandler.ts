@@ -2,7 +2,7 @@ import { NextFunction, Request, Response } from 'express'
 
 import ApiError from '@services/error/ApiError'
 
-const errorHandler = (error: any, req: Request, res: Response, next: NextFunction) => {
+const errorHandler = (error: unknown, req: Request, res: Response, _next: NextFunction) => {
   if (error instanceof ApiError) {
     res.status(error.statusCode).json({
       status: error.statusCode,

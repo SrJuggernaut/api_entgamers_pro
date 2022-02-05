@@ -22,7 +22,7 @@ const prismaErrorCatcher = (error: unknown) => {
           }
         }
         const error2002:Error2002 = error as Error2002
-        return new ApiError(409, 'Conflict', `Unique constraint failed on: "${error2002.meta!.target[0]}"`)
+        return new ApiError(409, 'Conflict', `Unique constraint failed on: "${error2002.meta.target[0]}"`)
       }
       case 'P2003':
       case 'P2004':
