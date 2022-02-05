@@ -1,7 +1,7 @@
 import jwt from 'jsonwebtoken'
 import type { Auth } from '@prisma/client'
 
-import { JWT_SECRET } from '@lib/dotenv/dotenv'
+import { JWT_SECRET } from '@lib/dotenv'
 
 export const createAuthToken = (auth: Auth) => {
   return jwt.sign({ sub: auth.id }, JWT_SECRET, {

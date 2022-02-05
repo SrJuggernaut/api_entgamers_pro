@@ -2,7 +2,7 @@ import ApiError from '@services/error/ApiError'
 import bcrypt from 'bcrypt'
 import { NextFunction, Request, Response } from 'express'
 
-import prismaClient from '@lib/prisma/prisma'
+import prismaClient from '@lib/prisma'
 
 const authenticateLocal = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { verifyAuthToken } from '@lib/jwt/jwt'
-import prismaClient from '@lib/prisma/prisma'
+import { verifyAuthToken } from '@lib/jsonwebtoken'
+import prismaClient from '@lib/prisma'
 import ApiError from '@services/error/ApiError'
 
 export const authenticateNotRequiredJwt = async (req: Request, res: Response, next: NextFunction) => {

@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer'
 
-import { SMTP_FROM, SMTP_FROM_NAME, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_SECURE, SMTP_USER } from '@lib/dotenv/dotenv'
+import { SMTP_FROM, SMTP_FROM_NAME, SMTP_HOST, SMTP_PASS, SMTP_PORT, SMTP_SECURE, SMTP_USER } from '@lib/dotenv'
 
 const transporter = nodemailer.createTransport({
   host: SMTP_HOST,

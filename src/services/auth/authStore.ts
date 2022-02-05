@@ -1,4 +1,4 @@
-import prisma from '@lib/prisma/prisma'
+import prisma from '@lib/prisma'
 import { Prisma } from '@prisma/client'
 
 import prismaErrorCatcher from '@services/error/prismaErrorCatcher'

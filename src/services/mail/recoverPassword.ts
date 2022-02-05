@@ -1,6 +1,6 @@
-import transporter from '@lib/nodemailer/transporter'
+import transporter from '@lib/nodemailer'
 import ApiError from '@services/error/ApiError'
-import { RECOVER_PASSWORD_URL } from '@lib/dotenv/dotenv'
+import { RECOVER_PASSWORD_URL } from '@lib/dotenv'
 
 export interface UserData {
   email: string

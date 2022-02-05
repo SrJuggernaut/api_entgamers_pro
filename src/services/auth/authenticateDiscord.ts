@@ -2,13 +2,13 @@ import axios from 'axios'
 import bcrypt from 'bcrypt'
 import { NextFunction, Request, Response } from 'express'
 
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
-import prismaClient from '@lib/prisma/prisma'
+import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv'
+import prismaClient from '@lib/prisma'
 import ApiError from '@services/error/ApiError'
 import { addSeconds } from 'date-fns'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import registerWithProvider from '@services/mail/registerWithProvider'
-import { createVerifyToken } from '@lib/jwt/jwt'
+import { createVerifyToken } from '@lib/jsonwebtoken'
 
 interface DiscordOauthTokenResponse {
   access_token: string,

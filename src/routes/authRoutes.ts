@@ -5,7 +5,7 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 
 import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateSendEmail, validateVerify } from '@services/validation/authValidation'
 import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
-import { createAuthToken, createRecoverPasswordToken, createVerifyToken, verifyToken } from '@lib/jwt/jwt'
+import { createAuthToken, createRecoverPasswordToken, createVerifyToken, verifyToken } from '@lib/jsonwebtoken'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import ApiError from '@services/error/ApiError'
 import authenticateJwt, { authenticateNotRequiredJwt } from '@services/auth/authenticateJwt'

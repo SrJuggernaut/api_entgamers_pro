@@ -1,5 +1,5 @@
-import { VERIFY_URL } from '@lib/dotenv/dotenv'
-import transporter from '@lib/nodemailer/transporter'
+import { VERIFY_URL } from '@lib/dotenv'
+import transporter from '@lib/nodemailer'
 import ApiError from '@services/error/ApiError'
 
 export interface UserData {

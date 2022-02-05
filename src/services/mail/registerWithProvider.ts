@@ -1,4 +1,4 @@
-import transporter from '@lib/nodemailer/transporter'
+import transporter from '@lib/nodemailer'
 import ApiError from '@services/error/ApiError'
 
 export interface UserData {

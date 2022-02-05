@@ -2,8 +2,8 @@ import express from 'express'
 import cors from 'cors'
 
 import authRoutes from '@routes/authRoutes'
-import { PORT } from '@lib/dotenv/dotenv'
-import { connect } from '@lib/prisma/prisma'
+import { PORT } from '@lib/dotenv'
+import { connect } from '@lib/prisma'
 import errorHandler from '@services/error/errorHandler'
 
 const app = express()
