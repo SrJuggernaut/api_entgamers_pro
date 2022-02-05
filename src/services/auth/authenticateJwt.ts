@@ -4,7 +4,7 @@ import { verifyBearerToken } from '@lib/jsonwebtoken'
 import prismaClient from '@lib/prisma'
 import ApiError from '@services/error/ApiError'
 
-export const authenticateNotRequiredJwt = async (req: Request, res: Response, next: NextFunction) => {
+export const notRequiredAuthenticateJwt = async (req: Request, res: Response, next: NextFunction) => {
   const token = req.headers.authorization?.replace('Bearer ', '')
   if (!token) {
     return next()

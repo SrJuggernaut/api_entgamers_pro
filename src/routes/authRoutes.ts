@@ -8,7 +8,7 @@ import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore
 import { createBearerToken, createRecoverPasswordToken, createVerifyEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import ApiError from '@services/error/ApiError'
-import authenticateJwt, { authenticateNotRequiredJwt } from '@services/auth/authenticateJwt'
+import authenticateJwt, { notRequiredAuthenticateJwt } from '@services/auth/authenticateJwt'
 import authenticateDiscord from '@services/auth/authenticateDiscord'
 import recoverPassword from '@services/mail/recoverPassword'
 import authenticateLocal from '@services/auth/authenticateLocal'
@@ -71,7 +71,7 @@ authRoutes.post('/login',
 )
 
 authRoutes.post('/discord',
-  authenticateNotRequiredJwt,
+  notRequiredAuthenticateJwt,
   authenticateDiscord,
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.auth.confirmed) {
