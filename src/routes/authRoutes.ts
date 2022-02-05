@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
-import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateSendEmail, validateVerify } from '@services/validation/authValidation'
+import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateResendVerifyEmail, validateSendEmail, validateVerify } from '@services/validation/authValidation'
 import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
 import { createBearerToken, createRecoverPasswordToken, createVerifyEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
@@ -118,6 +118,29 @@ authRoutes.post('/verify',
       if (error instanceof JsonWebTokenError) {
         return next(new ApiError(400, 'Bad Request', 'Invalid token'))
       }
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/resend-verify',
+  validateResendVerifyEmail,
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { email } = req.body
+    try {
+      const auth = await getAuthByEmail(email)
+      if (!auth) {
+        return next(new ApiError(404, 'Not Found', 'Email not found'))
+      }
+      if (auth.confirmed) {
+        return next(new ApiError(400, 'Bad Request', 'Email already verified'))
+      }
+      const token = createVerifyEmailToken(auth)
+      verifyAuthMail({ email }, token)
+      res.status(200).json({
+        message: 'Successfully sent email'
+      })
+    } catch (error) {
       next(error)
     }
   }

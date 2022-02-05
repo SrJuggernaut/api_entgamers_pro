@@ -110,3 +110,16 @@ export const validateChangeEmail = (req: Request, res: Response, next: NextFunct
   req.body = value
   next()
 }
+
+const resendVerifyEmailSchema = Joi.object({
+  email: Joi.string().email().required()
+})
+
+export const validateResendVerifyEmail = (req: Request, res: Response, next: NextFunction) => {
+  const { error, value } = resendVerifyEmailSchema.validate(req.body, { abortEarly: false })
+  if (error) {
+    return next(new ApiError(400, 'Bad Request', error.details[0].message))
+  }
+  req.body = value
+  next()
+}
