@@ -1,28 +1,38 @@
-import jwt from 'jsonwebtoken'
+import jwt, { JsonWebTokenError } from 'jsonwebtoken'
 import type { Auth } from '@prisma/client'
 
 import { JWT_SECRET } from '@lib/dotenv'
 
-export const createAuthToken = (auth: Auth) => {
-  return jwt.sign({ sub: auth.id }, JWT_SECRET, {
-    expiresIn: '1h'
-  })
+export const createBearerToken = (auth: Auth, trusted:boolean): string => {
+  return jwt.sign(auth, JWT_SECRET, { expiresIn: trusted ? '30d' : '7h' })
 }
 
-export const verifyAuthToken = (token: string) => {
-  return jwt.verify(token, JWT_SECRET)
+export const verifyBearerToken = (token: string) => {
+  return jwt.verify(token, JWT_SECRET) as { sub: Auth['id'] }
 }
 
-export const createVerifyToken = (auth: Auth) => {
-  return jwt.sign({ sub: auth.id }, JWT_SECRET)
+export const createVerifyEmailToken = (auth: Auth) => {
+  return jwt.sign({ sub: auth.id, service: 'VERIFY_EMAIL' }, JWT_SECRET)
 }
 
-export const verifyToken = (token: string) => {
-  return jwt.verify(token, JWT_SECRET)
+export const verifyVerifyEmailToken = (token: string) => {
+  const payload = jwt.verify(token, JWT_SECRET) as { sub: Auth['id'], service: string }
+  if (payload.service !== 'VERIFY_EMAIL') {
+    throw new JsonWebTokenError('Invalid token')
+  }
+  return payload
 }
 
 export const createRecoverPasswordToken = (auth: Auth) => {
-  return jwt.sign({ sub: auth.id }, JWT_SECRET, {
+  return jwt.sign({ sub: auth.id, service: 'RECOVER_PASSWORD' }, JWT_SECRET, {
     expiresIn: '2h'
   })
+}
+
+export const verifyRecoverPasswordToken = (token: string) => {
+  const payload = jwt.verify(token, JWT_SECRET) as { sub: Auth['id'], service: string }
+  if (payload.service !== 'RECOVER_PASSWORD') {
+    throw new JsonWebTokenError('Invalid token')
+  }
+  return payload
 }

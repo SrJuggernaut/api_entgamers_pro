@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from 'express'
 
-import { verifyAuthToken } from '@lib/jsonwebtoken'
+import { verifyBearerToken } from '@lib/jsonwebtoken'
 import prismaClient from '@lib/prisma'
 import ApiError from '@services/error/ApiError'
 
@@ -9,7 +9,7 @@ export const authenticateNotRequiredJwt = async (req: Request, res: Response, ne
   if (!token) {
     return next()
   } else {
-    const payload = verifyAuthToken(token)
+    const payload = verifyBearerToken(token)
     if (payload.sub && typeof payload.sub === 'string') {
       const auth = await prismaClient.auth.findUnique({
         where: {
@@ -35,7 +35,7 @@ const authenticateJwt = async (req: Request, res: Response, next: NextFunction) 
     return next(new ApiError(401, 'Unauthorized', 'No token provided'))
   }
   try {
-    const payload = verifyAuthToken(token)
+    const payload = verifyBearerToken(token)
     if (payload.sub && typeof payload.sub === 'string') {
       const auth = await prismaClient.auth.findUnique({
         where: {

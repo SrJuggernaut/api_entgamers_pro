@@ -5,7 +5,7 @@ import { JsonWebTokenError } from 'jsonwebtoken'
 
 import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateSendEmail, validateVerify } from '@services/validation/authValidation'
 import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
-import { createAuthToken, createRecoverPasswordToken, createVerifyToken, verifyToken } from '@lib/jsonwebtoken'
+import { createBearerToken, createRecoverPasswordToken, createVerifyEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import ApiError from '@services/error/ApiError'
 import authenticateJwt, { authenticateNotRequiredJwt } from '@services/auth/authenticateJwt'
@@ -34,7 +34,7 @@ authRoutes.post('/register',
     }
     try {
       const createdAuth = await createAuth(authToCreate)
-      const token = createVerifyToken(createdAuth)
+      const token = createVerifyEmailToken(createdAuth)
       await verifyAuthMail({ email }, token)
       res.status(200).json({
         message: 'Successfully registered, please check your email to verify your account.'
@@ -49,13 +49,14 @@ authRoutes.post('/login',
   validateLogin,
   authenticateLocal,
   async (req: Request, res:Response, next:NextFunction) => {
+    const { trusted } = req.body
     if (!req.auth.confirmed) {
       return res.status(401).json({
         message: 'Please verify your account first.'
       })
     }
     try {
-      const token = createAuthToken(req.auth)
+      const token = createBearerToken(req.auth, trusted)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
@@ -77,7 +78,7 @@ authRoutes.post('/discord',
       return next(new ApiError(401, 'Unauthorized', 'Please verify your account first.'))
     }
     try {
-      const token = createAuthToken(req.auth)
+      const token = createBearerToken(req.auth, true)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
@@ -96,7 +97,7 @@ authRoutes.post('/verify',
   async (req: Request, res:Response, next:NextFunction) => {
     const { token } = req.body
     try {
-      const jwtPayload = verifyToken(token) as { sub: string }
+      const jwtPayload = verifyVerifyEmailToken(token)
       const updatedAuth = await updateAuth({
         where: {
           id: jwtPayload.sub
@@ -105,9 +106,9 @@ authRoutes.post('/verify',
           confirmed: true
         }
       })
-      const authToken = createAuthToken(updatedAuth)
+      const authToken = createBearerToken(updatedAuth, true)
       res.status(200).json({
-        message: 'Successfully verified',
+        message: 'Successfully verified email',
         data: {
           token: authToken,
           user: updatedAuth?.profile
@@ -146,7 +147,7 @@ authRoutes.post('/recoverPassword',
   async (req: Request, res:Response, next:NextFunction) => {
     const { token, password } = req.body
     try {
-      const jwtPayload = verifyToken(token) as { sub: string }
+      const jwtPayload = verifyRecoverPasswordToken(token) as { sub: string }
       const updatedAuth = await updateAuth({
         where: {
           id: jwtPayload.sub
@@ -155,14 +156,11 @@ authRoutes.post('/recoverPassword',
           password: await bcrypt.hash(password, 10)
         }
       })
-      const authToken = createAuthToken(updatedAuth)
-      res.status(200).json({
-        message: 'Successfully changed password',
-        data: {
-          token: authToken,
-          user: updatedAuth?.profile
-        }
-      })
+      if (updatedAuth) {
+        res.status(200).json({
+          message: 'Successfully changed password'
+        })
+      }
     } catch (error) {
       if (error instanceof JsonWebTokenError) {
         return next(new ApiError(400, 'Bad Request', 'Invalid token'))
@@ -186,14 +184,11 @@ authRoutes.post('/changePassword',
           password: await bcrypt.hash(password, 10)
         }
       })
-      const authToken = createAuthToken(updatedAuth)
-      res.status(200).json({
-        message: 'Successfully changed password',
-        data: {
-          token: authToken,
-          user: updatedAuth?.profile
-        }
-      })
+      if (updatedAuth) {
+        res.status(200).json({
+          message: 'Successfully changed password'
+        })
+      }
     } catch (error) {
       next(error)
     }
@@ -214,14 +209,11 @@ authRoutes.post('/changeEmail',
           email
         }
       })
-      const authToken = createAuthToken(updatedAuth)
-      res.status(200).json({
-        message: 'Successfully changed email',
-        data: {
-          token: authToken,
-          user: updatedAuth?.profile
-        }
-      })
+      if (updatedAuth) {
+        res.status(200).json({
+          message: 'Successfully changed email'
+        })
+      }
     } catch (error) {
       next(error)
     }

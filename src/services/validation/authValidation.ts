@@ -32,7 +32,8 @@ export const validateAuthDiscord = (req: Request, res: Response, next: NextFunct
 
 const loginSchema = Joi.object({
   email: Joi.string().email().required(),
-  password: Joi.string().min(6).required()
+  password: Joi.string().min(6).required(),
+  trusted: Joi.boolean().required()
 })
 
 export const validateLogin = (req: Request, res: Response, next: NextFunction) => {

@@ -8,7 +8,7 @@ import ApiError from '@services/error/ApiError'
 import { addSeconds } from 'date-fns'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import registerWithProvider from '@services/mail/registerWithProvider'
-import { createVerifyToken } from '@lib/jsonwebtoken'
+import { createVerifyEmailToken } from '@lib/jsonwebtoken'
 
 interface DiscordOauthTokenResponse {
   access_token: string,
@@ -127,7 +127,7 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
     })
 
     if (!createdAuth.confirmed) {
-      const token = createVerifyToken(createdAuth)
+      const token = createVerifyEmailToken(createdAuth)
       await verifyAuthMail({ email: createdAuth.email }, token)
     } else {
       await registerWithProvider({ email: createdAuth.email }, 'discord')
