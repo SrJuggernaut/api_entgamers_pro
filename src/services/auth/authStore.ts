@@ -39,6 +39,15 @@ export const getAuthByProfile = async (profileFindUniqueArgs: Prisma.ProfileFind
   }
 }
 
+export const getAuthByEmail = async (email: Prisma.AuthFindUniqueArgs['where']['email']) => {
+  try {
+    const auth = await prisma.auth.findUnique({ where: { email }, include: { profile: true } })
+    return auth
+  } catch (error) {
+    throw prismaErrorCatcher(error)
+  }
+}
+
 export const updateAuth = async (authUpdateArgs: Prisma.AuthUpdateArgs) => {
   try {
     const auth = await prisma.auth.update({ ...authUpdateArgs, include: { profile: true } })

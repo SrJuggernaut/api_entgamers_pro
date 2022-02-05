@@ -10,6 +10,6 @@ type AuthWithProfile = Prisma.AuthGetPayload<typeof authWithProfile>
 
 declare module 'express-serve-static-core' {
   interface Request {
-    user: AuthWithProfile
+    auth: AuthWithProfile
   }
 }

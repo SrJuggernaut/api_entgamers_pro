@@ -11,15 +11,14 @@ datasource db {
 }
 
 model Auth {
-  id                 String     @id @default(uuid())
-  email              String     @unique
-  password           String
-  resetPasswordToken String?
-  confirmed          Boolean    @default(false)
-  blocked            Boolean    @default(false)
-  providers          Provider[]
-  profile            Profile    @relation(fields: [profileId], references: [id])
-  profileId          String     @unique
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  confirmed Boolean    @default(false)
+  blocked   Boolean    @default(false)
+  providers Provider[]
+  profile   Profile    @relation(fields: [profileId], references: [id])
+  profileId String     @unique
 
   @@map("auths")
 }
@@ -43,7 +42,9 @@ model Profile {
   userName    String    @unique
   email       String    @unique
   name        String?
+  picture     String?
   biography   String?
+  discordData Json?
   gender      String?
   dateOfBirth DateTime?
   createdAt   DateTime  @default(now())

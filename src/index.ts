@@ -1,13 +1,9 @@
 import express from 'express'
-import passport from 'passport'
 import cors from 'cors'
 
 import authRoutes from '@routes/authRoutes'
 import { PORT } from '@lib/dotenv/dotenv'
 import { connect } from '@lib/prisma/prisma'
-import localStrategy from '@lib/passport/localStrategy'
-import discordStrategy from '@lib/passport/discordStrategy'
-import jwtStrategy from '@lib/passport/jwtStrategy'
 import errorHandler from '@services/error/errorHandler'
 
 const app = express()
@@ -15,12 +11,7 @@ const app = express()
 connect()
 
 app.use(express.json())
-app.use(passport.initialize())
 app.use(cors())
-
-passport.use(localStrategy)
-passport.use(discordStrategy)
-passport.use(jwtStrategy)
 
 app.use('/auth', authRoutes)
 

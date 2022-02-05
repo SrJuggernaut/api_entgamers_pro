@@ -1,16 +1,16 @@
-import { VERIFY_URL } from '@lib/dotenv/dotenv'
 import transporter from '@lib/nodemailer/transporter'
 import ApiError from '@services/error/ApiError'
+import { RECOVER_PASSWORD_URL } from '@lib/dotenv/dotenv'
 
 export interface UserData {
   email: string
 }
 
-const verifyAuthMail = async (userData: UserData, token: string) => {
+const recoverPassword = async (userData: UserData, token:string) => {
   try {
-    const verifyMail = await transporter.sendMail({
+    const recoverPasswordMail = await transporter.sendMail({
       to: userData.email,
-      subject: 'Verifica tu Email',
+      subject: 'Gracias por registrarte',
       html: `
       <!DOCTYPE HTML PUBLIC "-//W3C//DTD XHTML 1.0 Transitional //EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
       <html xmlns="http://www.w3.org/1999/xhtml" xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office">
@@ -133,7 +133,7 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
           <tbody>
             <tr>
               <td style="display:none !important;visibility:hidden;mso-hide:all;font-size:1px;color:#ffffff;line-height:1px;max-height:0px;max-width:0px;opacity:0;overflow:hidden;">
-                Verifica tu Email
+                Recupera tu contraseña
               </td>
             </tr>
       
@@ -219,7 +219,7 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Open Sans',sans-serif;" align="left">
       
                                     <h1 style="margin: 0px; line-height: 140%; text-align: center; word-wrap: break-word; font-weight: normal; font-family: 'Source Sans Pro',sans-serif; font-size: 40px;">
-                                      Verifica tu Email
+                                      Recupera tu contrase&ntilde;a
                                     </h1>
       
                                   </td>
@@ -258,7 +258,9 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Open Sans',sans-serif;" align="left">
       
                                     <div style="line-height: 140%; text-align: center; word-wrap: break-word;">
-                                      <p style="font-size: 14px; line-height: 140%;"><span style="font-size: 16px; line-height: 22.4px;">&iexcl;Hola!, Muchas gracias por registrarte. Ahora para continuar deber&aacute;s verificar tu Email haciendo clic al siguiente bot&oacute;n:</span></p>
+                                      <p style="line-height: 140%; font-size: 14px;"><span style="font-size: 16px; line-height: 22.4px;">Para recuperar tu contrase&ntilde;a haz clic en el bot&oacute;n y en la pagina que se abra podr&aacute;s escribir tu nueva contrase&ntilde;a. </span></p>
+                                      <p style="line-height: 140%; font-size: 14px;"><span style="font-size: 12px; line-height: 16.8px;">Este link ser&aacute; valido por 2 horas a partir de su expedici&oacute;n.</span></p>
+                                      <p style="line-height: 140%; font-size: 14px;"><span style="font-size: 12px; line-height: 16.8px;">Si no ha solicitado este correo ign&oacute;relo.</span></p>
                                     </div>
       
                                   </td>
@@ -297,9 +299,9 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Open Sans',sans-serif;" align="left">
       
                                     <div align="center">
-                                      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;font-family:'Open Sans',sans-serif;"><tr><td style="font-family:'Open Sans',sans-serif;" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${VERIFY_URL}?token=${token}" style="height:51px; v-text-anchor:middle; width:138px;" arcsize="8%" stroke="f" fillcolor="#39b94a"><w:anchorlock/><center style="color:#010206;font-family:'Open Sans',sans-serif;"><![endif]-->
-                                      <a href="${VERIFY_URL}?token=${token}" target="_blank" style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #010206; background-color: #39b94a; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
-                                        <span style="display:block;padding:16px;line-height:120%;"><span style="font-size: 16px; line-height: 19.2px; font-family: 'Open Sans', sans-serif;">Verificar Email</span></span>
+                                      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;font-family:'Open Sans',sans-serif;"><tr><td style="font-family:'Open Sans',sans-serif;" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${RECOVER_PASSWORD_URL}?token=${token}" style="height:51px; v-text-anchor:middle; width:210px;" arcsize="8%" stroke="f" fillcolor="#39b94a"><w:anchorlock/><center style="color:#010206;font-family:'Open Sans',sans-serif;"><![endif]-->
+                                      <a href="${RECOVER_PASSWORD_URL}?token=${token}" target="_blank" style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #010206; background-color: #39b94a; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
+                                        <span style="display:block;padding:16px;line-height:120%;"><span style="font-size: 16px; line-height: 19.2px; font-family: 'Open Sans', sans-serif;">Recupera tu contrase&ntilde;a</span></span>
                                       </a>
                                       <!--[if mso]></center></v:roundrect></td></tr></table><![endif]-->
                                     </div>
@@ -599,11 +601,11 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
       </html>
       `
     })
-    return verifyMail
+    return recoverPasswordMail
   } catch (error) {
     console.log('Error sending mail: ', error)
     throw new ApiError(500, 'Internal Server Error')
   }
 }
 
-export default verifyAuthMail
+export default recoverPassword

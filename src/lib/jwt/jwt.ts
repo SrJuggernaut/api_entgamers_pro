@@ -17,6 +17,12 @@ export const createVerifyToken = (auth: Auth) => {
   return jwt.sign({ sub: auth.id }, JWT_SECRET)
 }
 
-export const verifyVerifyToken = (token: string) => {
+export const verifyToken = (token: string) => {
   return jwt.verify(token, JWT_SECRET)
+}
+
+export const createRecoverPasswordToken = (auth: Auth) => {
+  return jwt.sign({ sub: auth.id }, JWT_SECRET, {
+    expiresIn: '2h'
+  })
 }

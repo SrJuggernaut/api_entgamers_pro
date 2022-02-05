@@ -1,41 +1,16 @@
 import bcrypt from 'bcrypt'
 import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
-import fetch from 'isomorphic-fetch'
-import passport from 'passport'
-import { addSeconds } from 'date-fns'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
-import { validateLogin, validateRegister, validateAuthDiscord, validateAuthLocal, validateVerify } from '@services/validation/authValidation'
-import { createAuth, updateAuth } from '@services/auth/authStore'
-import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv/dotenv'
-import { createAuthToken, createVerifyToken, verifyVerifyToken } from '@lib/jwt/jwt'
+import { validateLogin, validateRegister, validateVerify } from '@services/validation/authValidation'
+import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
+import { createAuthToken, createRecoverPasswordToken, createVerifyToken, verifyToken } from '@lib/jwt/jwt'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
 import ApiError from '@services/error/ApiError'
-
-interface DiscordOauthTokenResponse {
-  access_token: string,
-  refresh_token: string,
-  expires_in: number,
-  scope: string,
-  token_type: string
-}
-
-interface DiscordUserResponse {
-  id: string,
-  username: string,
-  avatar: string
-  discriminator: string
-  public_flags: number
-  flags: number
-  banner?: string
-  banner_color?: string
-  accent_color?: string
-  locale?: string
-  mfa_enabled: boolean
-  email: string
-  verified: boolean
-}
+import authenticateJwt, { authenticateNotRequiredJwt } from '@services/auth/authenticateJwt'
+import authenticateDiscord from '@services/auth/authenticateDiscord'
+import recoverPassword from '@services/mail/recoverPassword'
 
 const authRoutes = Router()
 
@@ -53,75 +28,13 @@ authRoutes.post('/register',
             email: email,
             userName: userName
           }
-        },
-        providers: {
-          create: {
-            name: 'local',
-            apiIdentifier: email
-          }
         }
       }
     }
     try {
       const createdAuth = await createAuth(authToCreate)
       const token = createVerifyToken(createdAuth)
-      await verifyAuthMail({ email, userName }, token)
-      res.status(200).json({
-        message: 'Successfully registered, please check your email to verify your account.'
-      })
-    } catch (error) {
-      next(error)
-    }
-  }
-)
-
-authRoutes.post('/register/discord',
-  validateAuthDiscord,
-  async (req: Request, res:Response, next:NextFunction) => {
-    const paramsToToken = new URLSearchParams({
-      client_id: DISCORD_CLIENT_ID,
-      client_secret: DISCORD_CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code: req.body.code,
-      redirect_uri: DISCORD_REDIRECT_URI
-    })
-    const randomPassword = await bcrypt.hash(Math.random().toString(36).slice(-8), 10)
-    try {
-      const resToken = await fetch('https://discord.com/api/oauth2/token', {
-        method: 'POST',
-        body: paramsToToken
-      })
-      const jsonToken = (await resToken.json()) as DiscordOauthTokenResponse
-      const resUser = await fetch('https://discord.com/api/users/@me', {
-        headers: {
-          Authorization: `Bearer ${jsonToken.access_token}`
-        }
-      })
-      const jsonUser = (await resUser.json()) as DiscordUserResponse
-      const authToCreate: Prisma.AuthCreateArgs = {
-        data: {
-          email: jsonUser.email,
-          password: randomPassword,
-          profile: {
-            create: {
-              email: jsonUser.id,
-              userName: jsonUser.username
-            }
-          },
-          providers: {
-            create: {
-              name: 'discord',
-              apiIdentifier: jsonUser.id,
-              apiToken: jsonToken.access_token,
-              apiRefreshToken: jsonToken.refresh_token,
-              expiresAt: addSeconds(new Date(), jsonToken.expires_in)
-            }
-          }
-        }
-      }
-      const createdAuth = await createAuth(authToCreate)
-      const token = createVerifyToken(createdAuth)
-      await verifyAuthMail({ email: jsonUser.email, userName: jsonUser.username }, token)
+      await verifyAuthMail({ email }, token)
       res.status(200).json({
         message: 'Successfully registered, please check your email to verify your account.'
       })
@@ -133,20 +46,19 @@ authRoutes.post('/register/discord',
 
 authRoutes.post('/login',
   validateLogin,
-  passport.authenticate('local', { session: false }),
   async (req: Request, res:Response, next:NextFunction) => {
-    if (!req.user.confirmed) {
+    if (!req.auth.confirmed) {
       return res.status(401).json({
         message: 'Please verify your account first.'
       })
     }
     try {
-      const token = createAuthToken(req.user)
+      const token = createAuthToken(req.auth)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
           token: token,
-          user: req.user
+          user: req.auth.profile
         }
       })
     } catch (error) {
@@ -155,102 +67,27 @@ authRoutes.post('/login',
   }
 )
 
-authRoutes.post('/login/discord',
-  validateAuthDiscord,
-  passport.authenticate('discord', { session: false }),
-  async (req: Request, res:Response, next:NextFunction) => {
-    if (!req.user.confirmed) {
+authRoutes.post('/discord',
+  authenticateNotRequiredJwt,
+  authenticateDiscord,
+  async (req: Request, res: Response, next: NextFunction) => {
+    if (!req.auth.confirmed) {
       return res.status(401).json({
         message: 'Please verify your account first.'
       })
     }
     try {
-      const token = createAuthToken(req.user)
+      const token = createAuthToken(req.auth)
       res.status(200).json({
         message: 'Successfully logged in',
         data: {
           token: token,
-          user: req.user
+          user: req.auth.profile
         }
       })
     } catch (error) {
       next(error)
     }
-  }
-)
-
-authRoutes.post('/connect/discord',
-  validateAuthDiscord,
-  passport.authenticate('jwt', { session: false }),
-  async (req: Request, res:Response, next:NextFunction) => {
-    const { id } = req.user
-    const paramsToToken = new URLSearchParams({
-      client_id: DISCORD_CLIENT_ID,
-      client_secret: DISCORD_CLIENT_SECRET,
-      grant_type: 'authorization_code',
-      code: req.body.code,
-      redirect_uri: DISCORD_REDIRECT_URI
-    })
-    try {
-      const resToken = await fetch('https://discord.com/api/oauth2/token', {
-        method: 'POST',
-        body: paramsToToken
-      })
-      const jsonToken = (await resToken.json()) as DiscordOauthTokenResponse
-      const resUser = await fetch('https://discord.com/api/users/@me', {
-        headers: {
-          Authorization: `Bearer ${jsonToken.access_token}`
-        }
-      })
-      const jsonUser = (await resUser.json()) as DiscordUserResponse
-      const authToCreate: Prisma.AuthUpdateArgs = {
-        where: {
-          profileId: id
-        },
-        data: {
-          providers: {
-            create: {
-              name: 'discord',
-              apiIdentifier: jsonUser.id,
-              apiToken: jsonToken.access_token,
-              apiRefreshToken: jsonToken.refresh_token,
-              expiresAt: addSeconds(new Date(), jsonToken.expires_in)
-            }
-          }
-        }
-      }
-      await updateAuth(authToCreate)
-      res.status(200).json({
-        message: 'Successfully connected'
-      })
-    } catch (error) {
-      next(error)
-    }
-  }
-)
-
-authRoutes.post('/connect/local',
-  validateAuthLocal,
-  passport.authenticate('jwt', { session: false }),
-  async (req: Request, res:Response, _next:NextFunction) => {
-    const { id } = req.user
-    const authToCreate: Prisma.AuthUpdateArgs = {
-      where: {
-        profileId: id
-      },
-      data: {
-        providers: {
-          create: {
-            name: 'local',
-            apiIdentifier: req.body.email
-          }
-        }
-      }
-    }
-    await updateAuth(authToCreate)
-    res.status(200).json({
-      message: 'Successfully connected'
-    })
   }
 )
 
@@ -259,7 +96,7 @@ authRoutes.post('/verify',
   async (req: Request, res:Response, next:NextFunction) => {
     const { token } = req.body
     try {
-      const jwtPayload = verifyVerifyToken(token) as { sub: string }
+      const jwtPayload = verifyToken(token) as { sub: string }
       const updatedAuth = await updateAuth({
         where: {
           id: jwtPayload.sub
@@ -280,6 +117,108 @@ authRoutes.post('/verify',
       if (error instanceof JsonWebTokenError) {
         return next(new ApiError(400, 'Bad Request', 'Invalid token'))
       }
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/sendRecoverPassword',
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { email } = req.body
+    try {
+      const auth = await getAuthByEmail(email)
+      if (auth) {
+        const token = createRecoverPasswordToken(auth)
+        await recoverPassword({ email }, token)
+      }
+      res.status(200).json({
+        message: 'Successfully sent recover password email'
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/recoverPassword',
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { token, password } = req.body
+    try {
+      const jwtPayload = verifyToken(token) as { sub: string }
+      const updatedAuth = await updateAuth({
+        where: {
+          id: jwtPayload.sub
+        },
+        data: {
+          password: await bcrypt.hash(password, 10)
+        }
+      })
+      const authToken = createAuthToken(updatedAuth)
+      res.status(200).json({
+        message: 'Successfully changed password',
+        data: {
+          token: authToken,
+          user: updatedAuth?.profile
+        }
+      })
+    } catch (error) {
+      if (error instanceof JsonWebTokenError) {
+        return next(new ApiError(400, 'Bad Request', 'Invalid token'))
+      }
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/changePassword',
+  authenticateJwt,
+  async (req: Request, res:Response, next:NextFunction) => {
+    try {
+      const { password } = req.body
+      const updatedAuth = await updateAuth({
+        where: {
+          id: req.auth.id
+        },
+        data: {
+          password: await bcrypt.hash(password, 10)
+        }
+      })
+      const authToken = createAuthToken(updatedAuth)
+      res.status(200).json({
+        message: 'Successfully changed password',
+        data: {
+          token: authToken,
+          user: updatedAuth?.profile
+        }
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+authRoutes.post('/changeEmail',
+  authenticateJwt,
+  async (req: Request, res:Response, next:NextFunction) => {
+    try {
+      const { email } = req.body
+      const updatedAuth = await updateAuth({
+        where: {
+          id: req.auth.id
+        },
+        data: {
+          email
+        }
+      })
+      const authToken = createAuthToken(updatedAuth)
+      res.status(200).json({
+        message: 'Successfully changed email',
+        data: {
+          token: authToken,
+          user: updatedAuth?.profile
+        }
+      })
+    } catch (error) {
       next(error)
     }
   }
