@@ -123,7 +123,7 @@ authRoutes.post('/verify',
   }
 )
 
-authRoutes.post('/sendRecoverPassword',
+authRoutes.post('/send-recover-password',
   validateSendEmail,
   async (req: Request, res:Response, next:NextFunction) => {
     const { email } = req.body
@@ -142,7 +142,7 @@ authRoutes.post('/sendRecoverPassword',
   }
 )
 
-authRoutes.post('/recoverPassword',
+authRoutes.post('/recover-password',
   validateRecoverPassword,
   async (req: Request, res:Response, next:NextFunction) => {
     const { token, password } = req.body
@@ -170,7 +170,7 @@ authRoutes.post('/recoverPassword',
   }
 )
 
-authRoutes.post('/changePassword',
+authRoutes.post('/change-password',
   authenticateJwt,
   validateChangePassword,
   async (req: Request, res:Response, next:NextFunction) => {
@@ -195,7 +195,7 @@ authRoutes.post('/changePassword',
   }
 )
 
-authRoutes.post('/changeEmail',
+authRoutes.post('/change-email',
   authenticateJwt,
   validateChangeEmail,
   async (req: Request, res:Response, next:NextFunction) => {
