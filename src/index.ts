@@ -5,6 +5,7 @@ import authRoutes from '@routes/authRoutes'
 import { PORT } from '@lib/dotenv'
 import { connect } from '@lib/prisma'
 import errorHandler from '@services/error/errorHandler'
+import profileRoutes from '@routes/profileRoutes'
 
 const app = express()
 
@@ -14,6 +15,7 @@ app.use(express.json())
 app.use(cors())
 
 app.use('/auth', authRoutes)
+app.use('/profiles', profileRoutes)
 
 app.use(errorHandler)
 

@@ -2,10 +2,21 @@ const { PrismaClient } = require('@prisma/client')
 const prismaClient = new PrismaClient()
 
 const seed = async () => {
-  const userScopes = []
-  const moderatorScopes = []
-  const collaboratorScopes = []
-  const adminScopes = []
+  const userScopes = [
+    'profile:get-self',
+    'profile:update-self'
+  ]
+  const moderatorScopes = [
+    ...userScopes
+  ]
+  const collaboratorScopes = [
+    ...moderatorScopes
+  ]
+  const adminScopes = [
+    ...collaboratorScopes,
+    'profile:get',
+    'profile:update'
+  ]
   try {
     const userRole = await prismaClient.role.upsert({
       where: {
