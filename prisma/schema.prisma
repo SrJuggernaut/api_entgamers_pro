@@ -50,6 +50,17 @@ model Profile {
   createdAt   DateTime  @default(now())
   modifiedAt  DateTime  @updatedAt
   auth        Auth?
+  role        Role      @relation(fields: [roleName], references: [name])
+  roleName    String
 
   @@map("profiles")
+}
+
+model Role {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  scopes   String[]
+  Profiles Profile[]
+
+  @@map("roles")
 }

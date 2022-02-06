@@ -108,7 +108,8 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
             email: user.email,
             userName: `${user.username}${user.discriminator}`,
             picture: avatar,
-            discordData
+            discordData,
+            role: { connect: { name: 'user' } }
           }
         },
         providers: {

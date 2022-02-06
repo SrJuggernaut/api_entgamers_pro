@@ -2,7 +2,7 @@ import { Prisma } from '@prisma/client'
 
 const authWithProfile = Prisma.validator<Prisma.AuthArgs>()({
   include: {
-    profile: true
+    profile: { include: { role: true } }
   }
 })
 

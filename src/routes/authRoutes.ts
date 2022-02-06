@@ -28,7 +28,8 @@ authRoutes.post('/register',
         profile: {
           create: {
             email: email,
-            userName: userName
+            userName: userName,
+            role: { connect: { name: 'user' } }
           }
         }
       }
