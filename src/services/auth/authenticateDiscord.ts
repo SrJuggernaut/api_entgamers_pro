@@ -6,8 +6,8 @@ import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '
 import prismaClient from '@lib/prisma'
 import ApiError from '@services/error/ApiError'
 import { addSeconds } from 'date-fns'
-import verifyAuthMail from '@services/mail/verifyAuthMail'
-import registerWithProvider from '@services/mail/registerWithProvider'
+import verifyAuthMail from '@services/mail/sendVerifyAuthEmailEmail'
+import sendRegisterWithProviderEmail from '@services/mail/sendRegisterWithProviderEmail'
 import { createVerifyEmailToken } from '@lib/jsonwebtoken'
 
 interface DiscordOauthTokenResponse {
@@ -130,7 +130,7 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
       const token = createVerifyEmailToken(createdAuth)
       await verifyAuthMail({ email: createdAuth.email }, token)
     } else {
-      await registerWithProvider({ email: createdAuth.email }, 'discord')
+      await sendRegisterWithProviderEmail({ email: createdAuth.email }, 'discord')
     }
     req.auth = createdAuth
     return next()

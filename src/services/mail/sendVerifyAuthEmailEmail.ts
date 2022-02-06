@@ -1,4 +1,4 @@
-import { VERIFY_URL } from '@lib/dotenv'
+import { FRONTEND_URL } from '@lib/dotenv'
 import transporter from '@lib/nodemailer'
 import ApiError from '@services/error/ApiError'
 
@@ -297,8 +297,8 @@ const verifyAuthMail = async (userData: UserData, token: string) => {
                                   <td style="overflow-wrap:break-word;word-break:break-word;padding:10px;font-family:'Open Sans',sans-serif;" align="left">
       
                                     <div align="center">
-                                      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;font-family:'Open Sans',sans-serif;"><tr><td style="font-family:'Open Sans',sans-serif;" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${VERIFY_URL}?token=${token}" style="height:51px; v-text-anchor:middle; width:138px;" arcsize="8%" stroke="f" fillcolor="#39b94a"><w:anchorlock/><center style="color:#010206;font-family:'Open Sans',sans-serif;"><![endif]-->
-                                      <a href="${VERIFY_URL}?token=${token}" target="_blank" style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #010206; background-color: #39b94a; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
+                                      <!--[if mso]><table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0; border-collapse: collapse; mso-table-lspace:0pt; mso-table-rspace:0pt;font-family:'Open Sans',sans-serif;"><tr><td style="font-family:'Open Sans',sans-serif;" align="center"><v:roundrect xmlns:v="urn:schemas-microsoft-com:vml" xmlns:w="urn:schemas-microsoft-com:office:word" href="${FRONTEND_URL}/verify-email?token=${token}" style="height:51px; v-text-anchor:middle; width:138px;" arcsize="8%" stroke="f" fillcolor="#39b94a"><w:anchorlock/><center style="color:#010206;font-family:'Open Sans',sans-serif;"><![endif]-->
+                                      <a href="${FRONTEND_URL}/verify-email?token=${token}" target="_blank" style="box-sizing: border-box;display: inline-block;font-family:'Open Sans',sans-serif;text-decoration: none;-webkit-text-size-adjust: none;text-align: center;color: #010206; background-color: #39b94a; border-radius: 4px;-webkit-border-radius: 4px; -moz-border-radius: 4px; width:auto; max-width:100%; overflow-wrap: break-word; word-break: break-word; word-wrap:break-word; mso-border-alt: none;">
                                         <span style="display:block;padding:16px;line-height:120%;"><span style="font-size: 16px; line-height: 19.2px; font-family: 'Open Sans', sans-serif;">Verificar Email</span></span>
                                       </a>
                                       <!--[if mso]></center></v:roundrect></td></tr></table><![endif]-->

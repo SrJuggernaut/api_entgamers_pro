@@ -3,11 +3,15 @@ import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
+import { validateChangeEmail, validateChangePassword, validateDiscord, validateLogin, validateRecoverPassword, validateRegister, validateRequestEmailChange, validateResendVerify, validateSendRecoverPassword, validateVerify } from '@services/validation/auth'
 import { createAuth, deleteAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
+import { createBearerToken, createChangeEmailToken, createRecoverPasswordToken, createVerifyEmailToken, verifyChangeEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
+import sendVerifyAuthEmailEmail from '@services/mail/sendVerifyAuthEmailEmail'
+import sendRecoverPasswordEmail from '@services/mail/sendRecoverPasswordEmail'
+import sendChangeEmailEmail from '@services/mail/sendChangeEmailEmail'
 import ApiError from '@services/error/ApiError'
 import authenticateJwt, { notRequiredAuthenticateJwt } from '@services/auth/authenticateJwt'
 import authenticateDiscord from '@services/auth/authenticateDiscord'
-import recoverPassword from '@services/mail/recoverPassword'
 import authenticateLocal from '@services/auth/authenticateLocal'
 
 const authRoutes = Router()
@@ -32,7 +36,7 @@ authRoutes.post('/register',
     try {
       const createdAuth = await createAuth(authToCreate)
       const token = createVerifyEmailToken(createdAuth)
-      await verifyAuthMail({ email }, token)
+      await sendVerifyAuthEmailEmail({ email }, token)
       res.status(200).json({
         message: 'Successfully registered, please check your email to verify your account.'
       })
@@ -134,7 +138,7 @@ authRoutes.post('/resend-verify',
         return next(new ApiError(400, 'Bad Request', 'Email already verified'))
       }
       const token = createVerifyEmailToken(auth)
-      verifyAuthMail({ email }, token)
+      sendVerifyAuthEmailEmail({ email }, token)
       res.status(200).json({
         message: 'Successfully sent email'
       })
@@ -152,7 +156,7 @@ authRoutes.post('/send-recover-password',
       const auth = await getAuthByEmail(email)
       if (auth) {
         const token = createRecoverPasswordToken(auth)
-        await recoverPassword({ email }, token)
+        await sendRecoverPasswordEmail({ email }, token)
       }
       res.status(200).json({
         message: 'Successfully sent recover password email'
@@ -216,18 +220,36 @@ authRoutes.post('/change-password',
   }
 )
 
+authRoutes.post('/request-email-change',
+  authenticateJwt,
+  validateRequestEmailChange,
+  async (req: Request, res:Response, next:NextFunction) => {
+    const { newEmail } = req.body
+    try {
+      const token = createChangeEmailToken(req.auth, newEmail)
+      await sendChangeEmailEmail({ email: req.auth.email }, token)
+      res.status(200).json({
+        message: 'Successfully sent email change request'
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
 authRoutes.post('/change-email',
   authenticateJwt,
   validateChangeEmail,
   async (req: Request, res:Response, next:NextFunction) => {
-    const { email } = req.body
+    const { token } = req.body
     try {
+      const jwtPayload = verifyChangeEmailToken(token)
       const updatedAuth = await updateAuth({
         where: {
           id: req.auth.id
         },
         data: {
-          email
+          email: jwtPayload.newEmail
         }
       })
       if (updatedAuth) {

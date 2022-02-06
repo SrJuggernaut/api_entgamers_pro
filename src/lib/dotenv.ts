@@ -10,8 +10,7 @@ export const DISCORD_CLIENT_ID = process.env.DISCORD_CLIENT_ID || ''
 export const DISCORD_CLIENT_SECRET = process.env.DISCORD_CLIENT_SECRET || ''
 export const DISCORD_REDIRECT_URI = process.env.DISCORD_REDIRECT_URI || ''
 
-export const VERIFY_URL = process.env.VERIFY_URL || ''
-export const RECOVER_PASSWORD_URL = process.env.RECOVER_PASSWORD_URL || ''
+export const FRONTEND_URL = process.env.FRONTEND_URL || ''
 
 export const SMTP_FROM = process.env.SMTP_FROM || ''
 export const SMTP_FROM_NAME = process.env.SMTP_FROM_NAME || ''
