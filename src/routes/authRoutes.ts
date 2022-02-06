@@ -3,7 +3,7 @@ import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
-import { validateChangeEmail, validateChangePassword, validateLogin, validateRecoverPassword, validateRegister, validateResendVerifyEmail, validateSendEmail, validateVerify } from '@services/validation/authValidation'
+import { validateChangeEmail, validateChangePassword, validateDiscord, validateLogin, validateRecoverPassword, validateRegister, validateResendVerify, validateSendRecoverPassword, validateVerify } from '@services/validation/auth'
 import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
 import { createBearerToken, createRecoverPasswordToken, createVerifyEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
 import verifyAuthMail from '@services/mail/verifyAuthMail'
@@ -73,6 +73,7 @@ authRoutes.post('/login',
 authRoutes.post('/discord',
   notRequiredAuthenticateJwt,
   authenticateDiscord,
+  validateDiscord,
   async (req: Request, res: Response, next: NextFunction) => {
     if (!req.auth.confirmed) {
       return next(new ApiError(401, 'Unauthorized', 'Please verify your account first.'))
@@ -124,7 +125,7 @@ authRoutes.post('/verify',
 )
 
 authRoutes.post('/resend-verify',
-  validateResendVerifyEmail,
+  validateResendVerify,
   async (req: Request, res:Response, next:NextFunction) => {
     const { email } = req.body
     try {
@@ -147,7 +148,7 @@ authRoutes.post('/resend-verify',
 )
 
 authRoutes.post('/send-recover-password',
-  validateSendEmail,
+  validateSendRecoverPassword,
   async (req: Request, res:Response, next:NextFunction) => {
     const { email } = req.body
     try {
