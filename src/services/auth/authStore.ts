@@ -56,3 +56,12 @@ export const updateAuth = async (authUpdateArgs: Prisma.AuthUpdateArgs) => {
     throw prismaErrorCatcher(error)
   }
 }
+
+export const deleteAuth = async (authDeleteArgs: Prisma.AuthDeleteArgs) => {
+  try {
+    const auth = await prisma.auth.delete({ ...authDeleteArgs })
+    return auth
+  } catch (error) {
+    throw prismaErrorCatcher(error)
+  }
+}

@@ -3,10 +3,7 @@ import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
-import { validateChangeEmail, validateChangePassword, validateDiscord, validateLogin, validateRecoverPassword, validateRegister, validateResendVerify, validateSendRecoverPassword, validateVerify } from '@services/validation/auth'
-import { createAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
-import { createBearerToken, createRecoverPasswordToken, createVerifyEmailToken, verifyRecoverPasswordToken, verifyVerifyEmailToken } from '@lib/jsonwebtoken'
-import verifyAuthMail from '@services/mail/verifyAuthMail'
+import { createAuth, deleteAuth, getAuthByEmail, updateAuth } from '@services/auth/authStore'
 import ApiError from '@services/error/ApiError'
 import authenticateJwt, { notRequiredAuthenticateJwt } from '@services/auth/authenticateJwt'
 import authenticateDiscord from '@services/auth/authenticateDiscord'
@@ -236,6 +233,26 @@ authRoutes.post('/change-email',
       if (updatedAuth) {
         res.status(200).json({
           message: 'Successfully changed email'
+        })
+      }
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+authRoutes.delete('/',
+  authenticateJwt,
+  async (req: Request, res:Response, next:NextFunction) => {
+    try {
+      const deletedAuth = await deleteAuth({
+        where: {
+          id: req.auth.id
+        }
+      })
+      if (deletedAuth) {
+        res.status(200).json({
+          message: 'Successfully deleted account'
         })
       }
     } catch (error) {

@@ -36,3 +36,17 @@ export const verifyRecoverPasswordToken = (token: string) => {
   }
   return payload
 }
+
+export const createChangeEmailToken = (auth: Auth, newEmail: string) => {
+  return jwt.sign({ sub: auth.id, newEmail, service: 'CHANGE_EMAIL' }, JWT_SECRET, {
+    expiresIn: '2h'
+  })
+}
+
+export const verifyChangeEmailToken = (token: string) => {
+  const payload = jwt.verify(token, JWT_SECRET) as { sub: Auth['id'], newEmail: string, service: string }
+  if (payload.service !== 'CHANGE_EMAIL') {
+    throw new JsonWebTokenError('Invalid token')
+  }
+  return payload
+}
