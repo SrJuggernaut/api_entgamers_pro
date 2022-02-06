@@ -13,6 +13,7 @@ const prismaErrorCatcher = (error: unknown) => {
     case 'P2013':
     case 'P2019':
       return new ApiError(400, 'Bad Request', 'Validation Error')
+    case 'P2025':
     case 'P2001':
       return new ApiError(404, 'Not Found')
     case 'P2002': {
@@ -40,7 +41,6 @@ const prismaErrorCatcher = (error: unknown) => {
     case 'P2022':
     case 'P2023':
     case 'P2024':
-    case 'P2025':
     case 'P2026':
     case 'P2027':
       console.log('unexpected prisma error:', error)
