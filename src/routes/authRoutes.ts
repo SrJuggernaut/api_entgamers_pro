@@ -1,5 +1,4 @@
 import bcrypt from 'bcrypt'
-import { Prisma } from '@prisma/client'
 import { NextFunction, Request, Response, Router } from 'express'
 import { JsonWebTokenError } from 'jsonwebtoken'
 
@@ -21,21 +20,20 @@ authRoutes.post('/register',
   async (req: Request, res:Response, next:NextFunction) => {
     const { email, password, userName } = req.body
     const encryptedPassword = await bcrypt.hash(password, 10)
-    const authToCreate: Prisma.AuthCreateArgs = {
-      data: {
-        email: email,
-        password: encryptedPassword,
-        profile: {
-          create: {
-            email: email,
-            userName: userName,
-            role: { connect: { name: 'user' } }
+    try {
+      const createdAuth = await createAuth({
+        data: {
+          email: email,
+          password: encryptedPassword,
+          profile: {
+            create: {
+              email: email,
+              userName: userName,
+              role: { connect: { name: 'user' } }
+            }
           }
         }
-      }
-    }
-    try {
-      const createdAuth = await createAuth(authToCreate)
+      })
       const token = createVerifyEmailToken(createdAuth)
       await sendVerifyAuthEmailEmail({ email }, token)
       res.status(200).json({

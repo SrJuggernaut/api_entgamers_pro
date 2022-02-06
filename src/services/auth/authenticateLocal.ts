@@ -2,17 +2,14 @@ import ApiError from '@services/error/ApiError'
 import bcrypt from 'bcrypt'
 import { NextFunction, Request, Response } from 'express'
 
-import prismaClient from '@lib/prisma'
+import { getAuthByIdentifier } from '@services/auth/authStore'
 
 const authenticateLocal = async (req: Request, res: Response, next: NextFunction) => {
   const { email, password } = req.body
   try {
-    const auth = await prismaClient.auth.findUnique({
+    const auth = await getAuthByIdentifier({
       where: {
         email
-      },
-      include: {
-        profile: true
       }
     })
     if (!auth) {

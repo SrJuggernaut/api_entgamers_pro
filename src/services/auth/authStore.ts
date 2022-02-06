@@ -1,11 +1,10 @@
-import prisma from '@lib/prisma'
-import { Prisma } from '@prisma/client'
+import Prisma, { prismaClient } from '@lib/prisma'
 
 import prismaErrorCatcher from '@services/error/prismaErrorCatcher'
 
 export const createAuth = async (authCreateArgs: Prisma.AuthCreateArgs) => {
   try {
-    const auth = await prisma.auth.create({ ...authCreateArgs, include: { profile: true } })
+    const auth = await prismaClient.auth.create({ ...authCreateArgs, include: { profile: { include: { role: true } } } })
     return auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -14,7 +13,7 @@ export const createAuth = async (authCreateArgs: Prisma.AuthCreateArgs) => {
 
 export const getAuthByIdentifier = async (authFindUniqueArgs: Prisma.AuthFindUniqueArgs) => {
   try {
-    const auth = await prisma.auth.findUnique({ ...authFindUniqueArgs, include: { profile: true } })
+    const auth = await prismaClient.auth.findUnique({ ...authFindUniqueArgs, include: { profile: { include: { role: true } } } })
     return auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -23,7 +22,7 @@ export const getAuthByIdentifier = async (authFindUniqueArgs: Prisma.AuthFindUni
 
 export const getAuthByProvider = async (providerFindUniqueArgs: Prisma.ProviderFindUniqueArgs) => {
   try {
-    const provider = await prisma.provider.findUnique({ ...providerFindUniqueArgs, include: { auth: { include: { providers: true, profile: true } } } })
+    const provider = await prismaClient.provider.findUnique({ ...providerFindUniqueArgs, include: { auth: { include: { providers: true, profile: { include: { role: true } } } } } })
     return provider?.auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -32,7 +31,7 @@ export const getAuthByProvider = async (providerFindUniqueArgs: Prisma.ProviderF
 
 export const getAuthByProfile = async (profileFindUniqueArgs: Prisma.ProfileFindUniqueArgs) => {
   try {
-    const profile = await prisma.profile.findUnique({ ...profileFindUniqueArgs, include: { auth: { include: { providers: true, profile: true } } } })
+    const profile = await prismaClient.profile.findUnique({ ...profileFindUniqueArgs, include: { auth: { include: { providers: true, profile: { include: { role: true } } } } } })
     return profile?.auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -41,7 +40,7 @@ export const getAuthByProfile = async (profileFindUniqueArgs: Prisma.ProfileFind
 
 export const getAuthByEmail = async (email: Prisma.AuthFindUniqueArgs['where']['email']) => {
   try {
-    const auth = await prisma.auth.findUnique({ where: { email }, include: { profile: true } })
+    const auth = await prismaClient.auth.findUnique({ where: { email }, include: { profile: { include: { role: true } } } })
     return auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -50,7 +49,7 @@ export const getAuthByEmail = async (email: Prisma.AuthFindUniqueArgs['where']['
 
 export const updateAuth = async (authUpdateArgs: Prisma.AuthUpdateArgs) => {
   try {
-    const auth = await prisma.auth.update({ ...authUpdateArgs, include: { profile: true } })
+    const auth = await prismaClient.auth.update({ ...authUpdateArgs, include: { profile: { include: { role: true } } } })
     return auth
   } catch (error) {
     throw prismaErrorCatcher(error)
@@ -59,7 +58,7 @@ export const updateAuth = async (authUpdateArgs: Prisma.AuthUpdateArgs) => {
 
 export const deleteAuth = async (authDeleteArgs: Prisma.AuthDeleteArgs) => {
   try {
-    const auth = await prisma.auth.delete({ ...authDeleteArgs })
+    const auth = await prismaClient.auth.delete({ ...authDeleteArgs })
     return auth
   } catch (error) {
     throw prismaErrorCatcher(error)

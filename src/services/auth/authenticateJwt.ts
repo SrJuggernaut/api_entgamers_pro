@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from 'express'
 
 import { verifyBearerToken } from '@lib/jsonwebtoken'
-import prismaClient from '@lib/prisma'
+import { getAuthByIdentifier } from '@services/auth/authStore'
 import ApiError from '@services/error/ApiError'
 
 export const notRequiredAuthenticateJwt = async (req: Request, res: Response, next: NextFunction) => {
@@ -11,12 +11,9 @@ export const notRequiredAuthenticateJwt = async (req: Request, res: Response, ne
   } else {
     const payload = verifyBearerToken(token)
     if (payload.sub && typeof payload.sub === 'string') {
-      const auth = await prismaClient.auth.findUnique({
+      const auth = await getAuthByIdentifier({
         where: {
           id: payload.sub
-        },
-        include: {
-          profile: true
         }
       })
       if (auth) {
@@ -37,12 +34,9 @@ const authenticateJwt = async (req: Request, res: Response, next: NextFunction) 
   try {
     const payload = verifyBearerToken(token)
     if (payload.sub && typeof payload.sub === 'string') {
-      const auth = await prismaClient.auth.findUnique({
+      const auth = await getAuthByIdentifier({
         where: {
           id: payload.sub
-        },
-        include: {
-          profile: true
         }
       })
       if (auth) {

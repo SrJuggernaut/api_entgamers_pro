@@ -3,7 +3,7 @@ import bcrypt from 'bcrypt'
 import { NextFunction, Request, Response } from 'express'
 
 import { DISCORD_CLIENT_ID, DISCORD_CLIENT_SECRET, DISCORD_REDIRECT_URI } from '@lib/dotenv'
-import prismaClient from '@lib/prisma'
+import { createAuth, getAuthByProvider, updateAuth } from '@services/auth/authStore'
 import ApiError from '@services/error/ApiError'
 import { addSeconds } from 'date-fns'
 import verifyAuthMail from '@services/mail/sendVerifyAuthEmailEmail'
@@ -58,22 +58,17 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
       discriminator: user.discriminator,
       avatar
     }
-    const provider = await prismaClient.provider.findUnique({
+    const auth = await getAuthByProvider({
       where: {
         name_apiIdentifier: { apiIdentifier: user.id, name: 'discord' }
-      },
-      include: {
-        auth: {
-          include: { profile: true }
-        }
       }
     })
-    if (provider) {
-      req.auth = provider.auth
+    if (auth) {
+      req.auth = auth
       return next()
     }
     if (req.auth) {
-      const updatedAuth = await prismaClient.auth.update({
+      const updatedAuth = await updateAuth({
         where: { id: req.auth.id },
         data: {
           providers: {
@@ -90,15 +85,12 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
               discordData
             }
           }
-        },
-        include: {
-          profile: true
         }
       })
       req.auth = updatedAuth
       return next()
     }
-    const createdAuth = await prismaClient.auth.create({
+    const createdAuth = await createAuth({
       data: {
         email: user.email,
         password: await bcrypt.hash(Math.random().toString(36).slice(-8), 10),
@@ -121,9 +113,6 @@ const authenticateDiscord = async (req: Request, res: Response, next: NextFuncti
             expiresAt: addSeconds(new Date(), oauthTokenResponse.data.expires_in)
           }
         }
-      },
-      include: {
-        profile: true
       }
     })
 

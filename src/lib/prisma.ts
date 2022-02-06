@@ -1,10 +1,10 @@
 import { Prisma, PrismaClient } from '@prisma/client'
 
-const prisma = new PrismaClient()
+export const prismaClient = new PrismaClient()
 
 export const connect = async () => {
   try {
-    await prisma.$connect()
+    await prismaClient.$connect()
     console.log('Connected to Database')
   } catch (error) {
     if (error instanceof Prisma.PrismaClientInitializationError) {
@@ -16,11 +16,11 @@ export const connect = async () => {
 
 export const disconnect = async () => {
   try {
-    await prisma.$disconnect()
+    await prismaClient.$disconnect()
     console.log('Disconnected from Database')
   } catch (error) {
     console.error(error)
   }
 }
 
-export default prisma
+export default Prisma
