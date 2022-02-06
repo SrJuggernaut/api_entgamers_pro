@@ -4,7 +4,7 @@ import type { Auth } from '@prisma/client'
 import { JWT_SECRET } from '@lib/dotenv'
 
 export const createBearerToken = (auth: Auth, trusted:boolean): string => {
-  return jwt.sign(auth, JWT_SECRET, { expiresIn: trusted ? '30d' : '7h' })
+  return jwt.sign({ sub: auth.id }, JWT_SECRET, { expiresIn: trusted ? '30d' : '7h' })
 }
 
 export const verifyBearerToken = (token: string) => {
