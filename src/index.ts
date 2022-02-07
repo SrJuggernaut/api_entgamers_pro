@@ -6,6 +6,7 @@ import { PORT } from '@lib/dotenv'
 import { connect } from '@lib/prisma'
 import errorHandler from '@services/error/errorHandler'
 import profileRoutes from '@routes/profileRoutes'
+import homeRoutes from '@routes/homeRoutes'
 
 const app = express()
 
@@ -16,6 +17,7 @@ app.use(cors())
 
 app.use('/auth', authRoutes)
 app.use('/profiles', profileRoutes)
+app.use('/home', homeRoutes)
 
 app.use(errorHandler)
 

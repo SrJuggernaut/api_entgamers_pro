@@ -64,3 +64,24 @@ model Role {
 
   @@map("roles")
 }
+
+model Home {
+  id                  String   @id @default(uuid())
+  seo                 Json
+  heroTitle           String
+  heroSubtitle        String
+  heroImage           String
+  clanesTitle         String
+  clanesDescription   String
+  clanesImage         String
+  clanesButtonText    String
+  socialNetworksTitle String
+  socialNetworks      Json
+  teamTitle           String
+  teamJoinButtonText  String
+  teamViewButtonText  String
+  createdAt           DateTime @default(now())
+  modifiedAt          DateTime @updatedAt
+
+  @@map("homes")
+}
