@@ -3,7 +3,7 @@ import { NextFunction, Request, Response, Router } from 'express'
 import authenticateJwt from '@services/auth/authenticateJwt'
 import { getProfileByIdentifier, getProfiles, updateProfile } from '@services/profile/profileStore'
 import { authorizeProfile } from '@services/authorization/authorizeProfile'
-import { validateProfileIdParam, validateUpdateProfile } from '@services/validation/profile'
+import { validateProfileIdParam, validateUpdateProfile, validateUpdateProfileRole } from '@services/validation/profile'
 
 const profileRoutes = Router()
 
@@ -80,6 +80,25 @@ profileRoutes.put('/:id',
     const { id } = req.params
     try {
       const updatedProfile = await updateProfile({ where: { id }, data: req.body })
+      res.status(200).json({
+        message: 'profile updated',
+        data: { ...updatedProfile }
+      })
+    } catch (error) {
+      next(error)
+    }
+  }
+)
+
+profileRoutes.put('/:id/role',
+  authorizeProfile('profile:update-role'),
+  validateProfileIdParam,
+  validateUpdateProfileRole,
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { id } = req.params
+    const { role: newRole } = req.body
+    try {
+      const updatedProfile = await updateProfile({ where: { id }, data: { role: { connect: { name: newRole } } } })
       res.status(200).json({
         message: 'profile updated',
         data: { ...updatedProfile }
